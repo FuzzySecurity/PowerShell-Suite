@@ -91,7 +91,7 @@ function Invoke-Runas {
 	
 	[StructLayout(LayoutKind.Sequential, Size=8)]
 	public struct LUID
-    {
+	{
 		public uint LowPart; public int HighPart;
 	}
 	
