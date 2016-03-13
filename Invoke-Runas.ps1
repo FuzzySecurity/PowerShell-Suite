@@ -84,14 +84,15 @@ function Invoke-Runas {
 	}
 	
 	[StructLayout(LayoutKind.Sequential, Size=8)]
-	struct LARGE_INTEGER
+	public struct LARGE_INTEGER
 	{
-	public uint LowPart; public int HighPart;
+		public uint LowPart; public int HighPart;
 	}
 	
 	[StructLayout(LayoutKind.Sequential, Size=8)]
-	public struct LUID {
-	public uint LowPart; public int HighPart;
+	public struct LUID
+    {
+		public uint LowPart; public int HighPart;
 	}
 	
 	[StructLayout(LayoutKind.Sequential)]
@@ -167,7 +168,7 @@ function Invoke-Runas {
 	}
 	
 	else {
-		echo "[+]Process Details:"
+		echo "[+] Process Details:"
 		Get-Process -Id $ProcessInfo.dwProcessId |ft
 		
 		# Get proc handle
