@@ -3,6 +3,12 @@ function Invoke-Runas {
 <#
 .SYNOPSIS
 
+    Overview:
+    
+    Functionally equivalent to Windows "runas.exe", using Advapi32::CreateProcessWithLogonW. Advapi32::GetTokenInformation is not necessary here but was added for reference.
+    
+    Parameters:
+
      -User              Specifiy username.
      
      -Password          Specify password.
@@ -14,7 +20,7 @@ function Invoke-Runas {
                                            Log on, then load the user profile in the HKEY_USERS registry
                                            key. The function returns after the profile is loaded.
                                            
-                          0x00000002 --> LOGON_NETCREDENTIALS_ONLY
+                          0x00000002 --> LOGON_NETCREDENTIALS_ONLY (= /netonly)
                                            Log on, but use the specified credentials on the network only.
                                            The new process uses the same token as the caller, but the
                                            system creates a new logon session within LSA, and the process
