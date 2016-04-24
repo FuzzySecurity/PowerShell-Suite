@@ -65,3 +65,22 @@ Targets:
 Sit back and watch the pwn!
 C:\PS> Invoke-MS16-032
 ```
+
+## Utility
+
+### Calculate-Hash
+
+PowerShell v2 compatible script to calculate file hashes. I quickly scripted this together because Get-FileHash is only available in v4+.
+
+```
+Get the SHA512 hash of "C:\Some\File.path".
+C:\PS> Calculate-Hash -Path C:\Some\File.path -Algorithm SHA512
+```
+
+### Check-VTFile
+
+Submit SHA256 hash of a file to Virus Total and retrieve the scan report if the hash is known. This requires you to get a, free, VirusTotal API key. Again, lot's of better projects out there for this but not PowerShell v2 compatible.
+
+```
+C:\PS> Check-VTFile -Path C:\Some\File.path
+```
