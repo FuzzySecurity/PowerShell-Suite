@@ -72,6 +72,22 @@ Sit back and watch the pwn!
 C:\PS> Invoke-MS16-032
 ```
 
+### Subvert-PE
+
+Inject shellcode into a PE image while retaining the PE functionality.
+
+For additional information, please refer to:
+
+* FuzzySecurity: [Powershell PE Injection, this is not the Calc you are looking for!](http://www.fuzzysecurity.com/tutorials/20.html)
+
+```
+Analyse the PE header and hexdump the region of memory where shellcode would be injected.
+C:\PS> Subvert-PE -Path C:\Path\To\PE.exe
+
+Same as above but continue to inject shellcode and overwrite the binary.
+C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
+```
+
 ## Utility
 
 ### Calculate-Hash
