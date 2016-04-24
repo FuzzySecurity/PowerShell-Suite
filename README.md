@@ -4,6 +4,12 @@ There are great tools and resources online to accomplish most any task in PowerS
 
 As such the mileage you get out of them may vary but feel free to post issues or fork & adapt!
 
+Some resources on Windows API access from PowerShell:
+* FuzzySecurity: [Low-Level Windows API Access From PowerShell](http://www.fuzzysecurity.com/tutorials/24.html)
+* Microsoft TechNet: [Use PowerShell to Interact with the Windows API](https://blogs.technet.microsoft.com/heyscriptingguy/2013/06/25/use-powershell-to-interact-with-the-windows-api-part-1/)
+* Exploit Monday: [Accessing the Windows API in PowerShell via internal .NET methods and reflection](http://www.exploit-monday.com/2012/05/accessing-native-windows-api-in.html)
+* Exploit Monday: [Deep Reflection - Defining Structs and Enums in PowerShell](http://www.exploit-monday.com/2012/07/structs-and-enums-using-reflection.html)
+
 ## Windows API
 
 ### Invoke-Runas
