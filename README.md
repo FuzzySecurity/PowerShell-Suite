@@ -33,7 +33,7 @@ Enumerate active sessions on "SomeHostName".
 C:\PS> Invoke-NetSessionEnum -HostName SomeHostName
 ```
 
-### Invoke-NetSessionEnum
+### Invoke-CreateProcess
 
 Use Kernel32::CreateProcess to achieve fine-grained control over process creation from PowerShell.
 
