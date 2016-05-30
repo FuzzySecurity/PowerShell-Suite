@@ -2,7 +2,7 @@ function Detect-Debug {
 <#
 .SYNOPSIS
 
-    Use several techniques to detect the presence of a debugger. I realise 
+	Use several techniques to detect the presence of a debugger. I realise 
 	this does not make much sense from PowerShell (you may as well detect a
 	text editor..) but there you go :)!
 
