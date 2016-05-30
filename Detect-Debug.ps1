@@ -233,12 +233,15 @@ function Detect-Debug {
 		$ParentPID = (Get-WmiObject -Query "SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = $OwnPID").ParentProcessId
 		if (![Kernel32]::DebugActiveProcess($ParentPID)) {
 			echo "    [?] DebugSelf: Detected`n"
-			$CallResult = [Kernel32]::DebugActiveProcessStop($ParentPID)
 		} else {
 			echo "    [?] DebugSelf: False`n"
+			$CallResult = [Kernel32]::DebugActiveProcessStop($ParentPID)
 		}
 	}
 	
-	# This is a bit dirty .. I know I know
-	powershell.exe -Command $ScriptBlock -NoExit
+	# Start-Job launches $ScriptBlock as child process
+	Start-Job -Name Self_Debug -ScriptBlock $ScriptBlock| Out-Null
+	Wait-Job -Name Self_Debug| Out-Null
+	Receive-Job -Name Self_Debug
+	Remove-Job -Name Self_Debug
 }
