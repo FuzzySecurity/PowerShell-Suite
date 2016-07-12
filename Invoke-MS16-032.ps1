@@ -275,7 +275,6 @@ function Invoke-MS16-032 {
 	}
 	
 	echo "[>] Duplicating CreateProcessWithLogonW handle"
-	# Loop Get-ThreadHandle and collect thread handles with a valid TID
 	$hThread = Get-ThreadHandle
 	
 	# If no thread handle is captured, the box is patched
