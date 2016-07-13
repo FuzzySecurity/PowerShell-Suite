@@ -278,7 +278,7 @@ function Invoke-MS16-032 {
 	$hThread = Get-ThreadHandle
 	
 	# If no thread handle is captured, the box is patched
-	if (!$hThread) {
+	if ($hThread -eq 0) {
 		echo "[!] No valid thread handle was captured, exiting!`n"
 		Return
 	} else {
