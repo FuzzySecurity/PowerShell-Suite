@@ -5,7 +5,8 @@ function Invoke-Runas {
 
     Overview:
     
-    Functionally equivalent to Windows "runas.exe", using Advapi32::CreateProcessWithLogonW. Advapi32::GetTokenInformation is not necessary here but was added for reference.
+    Functionally equivalent to Windows "runas.exe", using Advapi32::CreateProcessWithLogonW (also used
+	by runas under the hood).
     
     Parameters:
 
@@ -58,6 +59,7 @@ function Invoke-Runas {
 		[Parameter(Mandatory = $False)]
 		[string]$Args=$null,
 		[Parameter(Mandatory = $True)]
+		[int][ValidateSet(1,2)]
 		[string]$LogonType
 	)  
 
@@ -70,37 +72,33 @@ function Invoke-Runas {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct PROCESS_INFORMATION
 	{
-		public IntPtr hProcess; public IntPtr hThread; public uint dwProcessId; public uint dwThreadId;
+		public IntPtr hProcess;
+		public IntPtr hThread;
+		public uint dwProcessId;
+		public uint dwThreadId;
 	}
 	
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 	public struct STARTUPINFO
 	{
-		public uint cb; public string lpReserved; public string lpDesktop; public string lpTitle;
-		public uint dwX; public uint dwY; public uint dwXSize; public uint dwYSize; public uint dwXCountChars;
-		public uint dwYCountChars; public uint dwFillAttribute; public uint dwFlags; public short wShowWindow;
-		public short cbReserved2; public IntPtr lpReserved2; public IntPtr hStdInput; public IntPtr hStdOutput;
+		public uint cb;
+		public string lpReserved;
+		public string lpDesktop;
+		public string lpTitle;
+		public uint dwX;
+		public uint dwY;
+		public uint dwXSize;
+		public uint dwYSize;
+		public uint dwXCountChars;
+		public uint dwYCountChars;
+		public uint dwFillAttribute;
+		public uint dwFlags;
+		public short wShowWindow;
+		public short cbReserved2;
+		public IntPtr lpReserved2;
+		public IntPtr hStdInput;
+		public IntPtr hStdOutput;
 		public IntPtr hStdError;
-	}
-	
-	[StructLayout(LayoutKind.Sequential, Size=8)]
-	public struct LARGE_INTEGER
-	{
-		public uint LowPart; public int HighPart;
-	}
-	
-	[StructLayout(LayoutKind.Sequential, Size=8)]
-	public struct LUID
-	{
-		public uint LowPart; public int HighPart;
-	}
-	
-	[StructLayout(LayoutKind.Sequential)]
-	public struct TOKEN_STATISTICS
-	{
-		LUID _tokenId; LUID _authenticationId; LARGE_INTEGER _expirationTime; public uint _tokenType;
-		public uint _impersonationLevel; public uint _dynamicCharged; public uint _dynamicAvailable;
-		public uint _groupCount; public uint _privilegeCount; LUID _modifiedId;
 	}
 	
 	public static class Advapi32
@@ -118,32 +116,12 @@ function Invoke-Runas {
 			String currentDirectory,
 			ref  STARTUPINFO startupInfo,
 			out PROCESS_INFORMATION processInformation);
-		
-		[DllImport("advapi32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
-		public static extern bool OpenProcessToken(
-			IntPtr ProcessHandle, 
-			uint DesiredAccess,
-			out IntPtr TokenHandle);
-			
-		[DllImport("advapi32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
-		public static extern bool GetTokenInformation(
-			IntPtr TokenHandle,
-			uint TokenInformationClass,
-			IntPtr TokenInformation,
-			uint TokenInformationLength,
-			out uint ReturnLength);
 	}
 	
 	public static class Kernel32
 	{
 		[DllImport("kernel32.dll")]
 		public static extern uint GetLastError();
-		
-		[DllImport("kernel32.dll")]
-		public static extern IntPtr OpenProcess(
-			int dwDesiredAccess,
-			bool bInheritHandle,
-			int dwProcessId);
 	}
 "@
 	
@@ -157,54 +135,19 @@ function Invoke-Runas {
 	$ProcessInfo = New-Object PROCESS_INFORMATION
 	
 	# CreateProcessWithLogonW --> lpCurrentDirectory
-	$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
+	$GetCurrentPath = $env:HOMEDRIVE
 	
 	echo "`n[>] Calling Advapi32::CreateProcessWithLogonW"
-	$CallResult = [Advapi32]::CreateProcessWithLogonW($User, $Domain, $Password, $LogonType, $Binary, $Args, 0x04000000, $null, $GetCurrentPath, [ref]$StartupInfo, [ref]$ProcessInfo)
+	$CallResult = [Advapi32]::CreateProcessWithLogonW(
+		$User, $Domain, $Password, $LogonType, $Binary,
+		$Args, 0x04000000, $null, $GetCurrentPath,
+		[ref]$StartupInfo, [ref]$ProcessInfo)
 	
 	if (!$CallResult) {
-		$LastError = [Kernel32]::GetLastError()
-		echo "[!] Mmm, something went wrong! GetLastError returned: $LastError`n"
+		echo "`n[!] Mmm, something went wrong! GetLastError returned:"
+		echo "==> $((New-Object System.ComponentModel.Win32Exception([int][Kernel32]::GetLastError())).Message)`n"
+	} else {
+		echo "`n[+] Success, process details:"
+		Get-Process -Id $ProcessInfo.dwProcessId
 	}
-	
-	else {
-		echo "[+] Process Details:"
-		Get-Process -Id $ProcessInfo.dwProcessId |ft
-		
-		# Get proc handle
-		echo "[>] Calling Kernel32::OpenProcess"
-		$ProcHandle = [Kernel32]::OpenProcess(0x0410, $false, $ProcessInfo.dwProcessId)
-		
-		if ($ProcHandle -eq 0) {
-			# This may fail because of permissions? Just checking in case.
-			$LastError = [Kernel32]::GetLastError()
-			echo "[!] Mmm, something went wrong! GetLastError returned: $LastError`n"
-		}
-		
-		else {
-			echo "[+] Open process handle: $ProcHandle`n"
-			
-			# Token handle
-			echo "[>] Calling Advapi32::OpenProcessToken"
-			$hTokenHandle = 0
-			$CallResult = [Advapi32]::OpenProcessToken($ProcHandle, 0x00020008, [ref]$hTokenHandle)
-			echo "[+] Open access token handle: $hTokenHandle`n"
-		
-			# Process token stats
-			$TokenStats = New-Object TOKEN_STATISTICS
-			$TokenStatsStructSize = [System.Runtime.InteropServices.Marshal]::SizeOf($TokenStats)
-			$TokenStats = $TokenStats.GetType()
-			[IntPtr]$OutBuffPtr = [System.Runtime.InteropServices.Marshal]::AllocHGlobal($TokenStatsStructSize)
-			[UInt32]$StructLength = 0
-			
-			echo "[>] Calling Advapi32::GetTokenInformation"
-			$CallResult = [Advapi32]::GetTokenInformation($hTokenHandle, 10, $OutBuffPtr, $TokenStatsStructSize, [ref]$StructLength)
-			$BufferOffset = $OutBuffPtr.ToInt64()
-			$NewIntPtr = New-Object System.Intptr -ArgumentList $BufferOffset
-			echo "[+] TOKEN_STATISTICS Stuct output:"
-			[system.runtime.interopservices.marshal]::PtrToStructure($NewIntPtr,[type]$TokenStats)
-		}
-		
-	}
-	
 }
