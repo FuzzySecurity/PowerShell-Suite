@@ -151,7 +151,7 @@ function Get-Handles {
 		else {
 			[System.Runtime.InteropServices.Marshal]::FreeHGlobal($BuffPtr)
 			echo "[!] Error, NTSTATUS Value: $('{0:X}' -f ($CallResult))`n"
-			break
+			return
 		}
 	}
 	
