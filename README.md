@@ -63,7 +63,15 @@ C:\PS> Detect-Debug
     [?] PEB!BeingDebugged: Detected
     [?] PEB!NtGlobalFlag: Detected
     [?] DebugSelf: Detected
+```
 
+### Get-Handles
+
+Use NtQuerySystemInformation::SystemHandleInformation to get a list of open handles in the specified process, works on x32/x64.
+
+```
+Get handles for PID 1234
+C:\PS> Get-Handles -ProcID 1234
 ```
 
 ## pwnd
