@@ -81,10 +81,19 @@ function Get-Handles {
 	$OSMajorMinor = "$($OSVersion.Major).$($OSVersion.Minor)"
 	switch ($OSMajorMinor)
 	{
-		'10.0' # Windows 10 - Need to add type switches
+		'10.0' # Windows 10 - Incomplete still, but 99% of the what you will see in any given process (work in progress, need to pull up KD)
 		{
-			$TypeSwitches = @{}
+			$TypeSwitches = @{
+				0x03 = 'Directory'; 0x04 = 'SymbolicLink'; 0x05 = 'Token'; 0x07 = 'Process'; 0x08 = 'Thread';
+				0x0D = 'Event'; 0x0E = 'Mutant'; 0x10 = 'Semaphore'; 0x11 = 'Timer'; 0x12 = 'IRTimer';
+				0x15 = 'WindowStation'; 0x16 = 'Desktop'; 0x17 = 'Composition'; 0x18 = 'RawInputManager';
+				0x19 = 'TpWorkerFactory'; 0x1E = 'IoCompletion'; 0x1F = 'WaitCompletionPacket'; 0x20 = 'File';
+				0x21 = 'TmTm'; 0x22 = 'TmTx'; 0x23 = 'TmRm'; 0x24 = 'TmEn'; 0x25 = 'Section'; 0x26 = 'Session';
+				0x27 = 'Partition'; 0x28 = 'Key'; 0x29 = 'ALPC Port'; 0x2C = 'EtwRegistration'; 0x2F = 'DmaDomain';
+				0x31 = 'FilterConnectionPort';
+			}
 		}
+		
 		'6.2' # Windows 8 and Windows Server 2012
 		{
 			$TypeSwitches = @{
@@ -182,20 +191,18 @@ function Get-Handles {
 			
 			$HashTable = @{
 				PID = $Cast.ProcessID
-				ObjectType = if ($OSMajorMinor -eq '10.0') { "0x$('{0:X2}' -f [int]$Cast.ObjectTypeNumber)" } else { $TypeSwitches[[int]$Cast.ObjectTypeNumber] }
+				ObjectType = if (!$($TypeSwitches[[int]$Cast.ObjectTypeNumber])) { "0x$('{0:X2}' -f [int]$Cast.ObjectTypeNumber)" } else { $TypeSwitches[[int]$Cast.ObjectTypeNumber] }
 				HandleFlags = $FlagSwitches[[int]$Cast.Flags]
 				Handle = "0x$('{0:X4}' -f [int]$Cast.HandleValue)"
-				KernelPointer = if ([System.IntPtr]::Size -eq 4) {
-									"0x$('{0:X}' -f $Cast.Object_Pointer.ToInt32())"
-								} else {
-									"0x$('{0:X}' -f $Cast.Object_Pointer.ToInt64())"
-								}
+				KernelPointer = if ([System.IntPtr]::Size -eq 4) { "0x$('{0:X}' -f $Cast.Object_Pointer.ToInt32())" } else { "0x$('{0:X}' -f $Cast.Object_Pointer.ToInt64())" }
 				AccessMask = "0x$('{0:X8}' -f $($Cast.GrantedAccess -band 0xFFFF0000))"
 			}
 			
 			$Object = New-Object PSObject -Property $HashTable
 			$SystemHandleArray += $Object
+			
 		}
+
 		$BuffOffset = $BuffOffset + $SYSTEM_HANDLE_INFORMATION_Size
 	}
 	
