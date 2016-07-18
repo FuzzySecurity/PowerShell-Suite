@@ -81,6 +81,10 @@ function Get-Handles {
 	$OSMajorMinor = "$($OSVersion.Major).$($OSVersion.Minor)"
 	switch ($OSMajorMinor)
 	{
+		'10.0' # Windows 10 - Need to add type switches
+		{
+			$TypeSwitches = @{}
+		}
 		'6.2' # Windows 8 and Windows Server 2012
 		{
 			$TypeSwitches = @{
@@ -178,7 +182,7 @@ function Get-Handles {
 			
 			$HashTable = @{
 				PID = $Cast.ProcessID
-				ObjectType = $TypeSwitches[[int]$Cast.ObjectTypeNumber]
+				ObjectType = if ($OSMajorMinor -eq '10.0') { "0x$('{0:X2}' -f [int]$Cast.ObjectTypeNumber)" } else { $TypeSwitches[[int]$Cast.ObjectTypeNumber] }
 				HandleFlags = $FlagSwitches[[int]$Cast.Flags]
 				Handle = "0x$('{0:X4}' -f [int]$Cast.HandleValue)"
 				KernelPointer = if ([System.IntPtr]::Size -eq 4) {
