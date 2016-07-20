@@ -74,6 +74,15 @@ Get handles for PID 1234
 C:\PS> Get-Handles -ProcID 1234
 ```
 
+### Get-TokenPrivs
+
+Open a handle to a process and use Advapi32::GetTokenInformation to list the privileges associated with the process token.
+
+```
+Get token privileges for PID 1234
+C:\PS> Get-TokenPrivs -ProcID 1234
+```
+
 ## pwnd
 
 ### Conjure-LSASS
