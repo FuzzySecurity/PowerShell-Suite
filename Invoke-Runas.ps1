@@ -135,7 +135,7 @@ function Invoke-Runas {
 	$ProcessInfo = New-Object PROCESS_INFORMATION
 	
 	# CreateProcessWithLogonW --> lpCurrentDirectory
-	$GetCurrentPath = $env:HOMEDRIVE
+	$GetCurrentPath = (Get-Item -Path ".\" -Verbose).FullName
 	
 	echo "`n[>] Calling Advapi32::CreateProcessWithLogonW"
 	$CallResult = [Advapi32]::CreateProcessWithLogonW(
