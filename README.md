@@ -169,7 +169,7 @@ SMB shell: exit
 PS C:\>
 ```
 
-**Client**
+**Client:**
 ```
 # Client disconnected because of "leave" command
 PS C:\> Invoke-SMBShell -Client -Server 0AK -AESKey q6EKfuJTX93YUnmX -Pipe tapsrv.5604.yk0DxXvjUD9xwyJ9
