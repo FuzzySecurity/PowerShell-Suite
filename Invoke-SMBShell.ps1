@@ -47,9 +47,9 @@ function Invoke-SMBShell {
 
 	[CmdletBinding(DefaultParametersetName='Server')]
 	param( 
-	    [Parameter(ParameterSetName='Client',Mandatory=$false)]
+		[Parameter(ParameterSetName='Client',Mandatory=$false)]
 		[switch]$Client,
-	    [Parameter(ParameterSetName='Client',Mandatory=$true)]
+		[Parameter(ParameterSetName='Client',Mandatory=$true)]
 		[string]$Server,
 		[Parameter(ParameterSetName='Client',Mandatory=$true)]
 		[string]$AESKey,
