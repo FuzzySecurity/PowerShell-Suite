@@ -117,6 +117,26 @@ LUID Privilege
 
 ## pwnd
 
+### Masquerade-PEB
+
+Masquerade-PEB uses NtQueryInformationProcess to get a handle to powershell's PEB. From there it replaces a number of UNICODE_STRING structs in memory to give powershell the appearance of a different process. Specifically, the function will overwrite powershell's "ImagePathName" & "CommandLine" in _RTL_USER_PROCESS_PARAMETERS and the "FullDllName" & "BaseDllName" in the _LDR_DATA_TABLE_ENTRY linked list.
+    
+This can be useful as it would fool any Windows work-flows which rely solely on the Process Status API to check process identity.
+
+```
+C:\PS> Masquerade-PEB -BinPath C:\Windows\System32\notepad.exe
+
+[?] PID 2756
+[+] PebBaseAddress: 0x7FFD3000
+[!] RtlEnterCriticalSection --> &Peb->FastPebLock
+[>] Overwriting &Peb->ProcessParameters.ImagePathName: 0x002F11F8
+[>] Overwriting &Peb->ProcessParameters.CommandLine: 0x002F1200
+[?] Traversing &Peb->Ldr->InLoadOrderModuleList doubly linked list
+[>] Overwriting _LDR_DATA_TABLE_ENTRY.FullDllName: 0x002F1B74
+[>] Overwriting _LDR_DATA_TABLE_ENTRY.BaseDllName: 0x002F1B7C
+[!] RtlLeaveCriticalSection --> &Peb->FastPebLock
+```
+
 ### Invoke-SMBShell
 
 POC shell using named pipes (System.IO.Pipes) as a C2 channel. The SMB traffic is encrypted using AES CBC (code from Empire), the key/pipe are generated randomly by the server on start-up.
