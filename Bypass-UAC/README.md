@@ -13,6 +13,8 @@ Bypass-UAC is self-contained and does not have any dependencies, bar a requireme
   * Targets: x32/x64 Windows 7 & 8
 * ucmDismMethod: Hybrid method (PkgMgr -> DISM -> dismcore.dll)
   * Targets: x64 Win7+ (currently unpatched)
+* UacMethodMMC2: Hybrid method (mmc -> rsop.msc -> wbemcomn.dll)
+  * Targets: x64 Win7+ (currently unpatched)
 
 #### Sample Output
 
