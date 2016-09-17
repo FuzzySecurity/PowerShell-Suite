@@ -1,0 +1,5 @@
+C:\Users\b33f\Desktop\FileOperations_old\FileOperations\bin\Release\FileOperation.dll
+C:\Users\b33f\Desktop\FileOperations_old\FileOperations\bin\Release\FileOperation.pdb
+C:\Users\b33f\Desktop\FileOperations_old\FileOperations\obj\Release\FileOperation.csprojResolveAssemblyReference.cache
+C:\Users\b33f\Desktop\FileOperations_old\FileOperations\obj\Release\FileOperation.dll
+C:\Users\b33f\Desktop\FileOperations_old\FileOperations\obj\Release\FileOperation.pdb

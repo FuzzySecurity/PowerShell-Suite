@@ -1,0 +1,57 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:ComReleaser.cs" caret="98" fromTop="5" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/d:Interop/f:IShellItem.cs" caret="0" fromTop="0" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="424" fromTop="9" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/d:Interop/f:SIGDN.cs" caret="0" fromTop="0" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="35" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="13" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="14" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="18" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="203" fromTop="2" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="681" fromTop="20" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="1006" fromTop="26" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="36" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="33" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="23" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="41" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="31" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8099" fromTop="28" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8684" fromTop="42" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8009" fromTop="9" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8320" fromTop="35" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8320" fromTop="24" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="7315" fromTop="21" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="7976" fromTop="18" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="7643" fromTop="6" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="8320" fromTop="17" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="723" fromTop="22" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="280" fromTop="0" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="723" fromTop="10" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="1675" fromTop="40" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:FileOperation.cs" caret="1131" fromTop="24" />
+      <File id="260EAEFE-D38D-4539-BAA2-708704B2D873/f:ComReleaser.cs" caret="98" fromTop="5" />
+    </RecentEdits>
+  </RecentFiles>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <UnitTestRunnerNUnit>
+    <NUnitInstallDir IsNull="False">
+    </NUnitInstallDir>
+    <UseAddins>Never</UseAddins>
+  </UnitTestRunnerNUnit>
+</Configuration>
