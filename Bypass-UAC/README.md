@@ -15,6 +15,8 @@ Bypass-UAC is self-contained and does not have any dependencies, bar a requireme
   * Targets: x64 Win7+ (currently unpatched)
 * UacMethodMMC2: Hybrid method (mmc -> rsop.msc -> wbemcomn.dll)
   * Targets: x64 Win7+ (currently unpatched)
+* UacMethodTcmsetup: Hybrid method (tcmsetup -> tcmsetup.exe.local -> comctl32.dll)
+  * Targets: x32/x64 Win7+ (currently unpatched)
 
 #### Sample Output
 
@@ -66,7 +68,7 @@ Bootstrap function which writes an x32/x64 bit proxy dll to disk (Yamabiko). Thi
 
 # Contributing
 
-Currently there are two methods in Bypass-UAC, I will add more gradually but it would be awesome if people want to contribute. It is really easy to add a new method, provided you need an elevated file copy/move/rename or folder creation. A sample method can be seen below for reference.
+Currently there are four methods in Bypass-UAC, I will add more gradually but it would be awesome if people want to contribute. It is really easy to add a new method, provided you need an elevated file copy/move/rename or folder creation. A sample method can be seen below for reference.
 
 ```powershell
 'UacMethodSysprep'

