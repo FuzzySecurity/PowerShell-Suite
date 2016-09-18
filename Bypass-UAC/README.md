@@ -130,6 +130,8 @@ This project is for authorized use only, that goes without saying, I don't take 
   * https://www.blackhat.com/docs/eu-15/materials/eu-15-Pierce-Defending-Against-Malicious-Application-Compatibility-Shims-wp.pdf
 * KernelMode UACMe thread
   * http://www.kernelmode.info/forum/viewtopic.php?f=11&t=3643
+* KernelMode, Using SxS redirection to gain NT AUTHORITY\SYSTEM privileges
+  * http://www.kernelmode.info/forum/viewtopic.php?f=11&t=3643&start=110
 * Syscan360, UAC security issues
   * https://www.syscan360.org/slides/2013_ZH_DeepThinkingTheUACSecurityIssues_Instruder.pdf
 * Microsoft technet, Inside Windows 7 User Account Control
