@@ -24,9 +24,9 @@ Bypass-UAC is self-contained and does not have any dependencies, bar a requireme
 
 ![UacMethodSysprep](images/Win7-32.png)
 
-**Win 8 Enterprise**
+**Win 10 Pro**
 
-![ucmDismMethod](images/Win8.1-64.png)
+![UacMethodTcmsetup](images/Win10-32.png)
 
 # Components
 
