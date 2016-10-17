@@ -17,6 +17,8 @@ Bypass-UAC is self-contained and does not have any dependencies, bar a requireme
   * Targets: x64 Win7+ (currently unpatched)
 * UacMethodTcmsetup: Hybrid method (tcmsetup -> tcmsetup.exe.local -> comctl32.dll)
   * Targets: x32/x64 Win7+ (currently unpatched)
+* UacMethodNetOle32: Hybrid method (mmc some.msc -> Microsoft.NET\Framework[64]\..\ole32.dll)
+  * Targets: x32/x64 Win7+ (currently unpatched)
 
 #### Sample Output
 
