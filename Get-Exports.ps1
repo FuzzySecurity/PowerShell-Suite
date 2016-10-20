@@ -88,11 +88,10 @@ C:\PS> Get-Exports -DllPath C:\Some\Path\here.dll -ExportsToCpp C:\Some\Out\File
 	[System.Runtime.InteropServices.Marshal]::Copy($FileBytes, 0, $HModule, $FileBytes.Length)
 
 	# Some Offsets..
-	$HModule = $HModule.ToInt64()
-	$PE_Header = [Runtime.InteropServices.Marshal]::ReadInt32($HModule + 0x3C)
-	$Section_Count = [Runtime.InteropServices.Marshal]::ReadInt16($HModule + $PE_Header + 0x6)
-	$Optional_Header_Size = [Runtime.InteropServices.Marshal]::ReadInt16($HModule + $PE_Header + 0x14)
-	$Optional_Header = $HModule + $PE_Header + 0x18
+	$PE_Header = [Runtime.InteropServices.Marshal]::ReadInt32($HModule.ToInt64() + 0x3C)
+	$Section_Count = [Runtime.InteropServices.Marshal]::ReadInt16($HModule.ToInt64() + $PE_Header + 0x6)
+	$Optional_Header_Size = [Runtime.InteropServices.Marshal]::ReadInt16($HModule.ToInt64() + $PE_Header + 0x14)
+	$Optional_Header = $HModule.ToInt64() + $PE_Header + 0x18
 
 	# We need some values from the Section table to calculate RVA's
 	$Section_Table = $Optional_Header + $Optional_Header_Size
@@ -139,7 +138,7 @@ C:\PS> Get-Exports -DllPath C:\Some\Path\here.dll -ExportsToCpp C:\Some\Out\File
 	$ExportRVA = Convert-RVAToFileOffset $([Runtime.InteropServices.Marshal]::ReadInt32($Export)) $SectionArray
 
 	# Cast offset as IMAGE_EXPORT_DIRECTORY
-	$OffsetPtr = New-Object System.Intptr -ArgumentList $($HModule + $ExportRVA)
+	$OffsetPtr = New-Object System.Intptr -ArgumentList $($HModule.ToInt64() + $ExportRVA)
 	$IMAGE_EXPORT_DIRECTORY = New-Object IMAGE_EXPORT_DIRECTORY
 	$IMAGE_EXPORT_DIRECTORY = $IMAGE_EXPORT_DIRECTORY.GetType()
 	$EXPORT_DIRECTORY_FLAGS = [system.runtime.interopservices.marshal]::PtrToStructure($OffsetPtr, [type]$IMAGE_EXPORT_DIRECTORY)
@@ -162,11 +161,11 @@ C:\PS> Get-Exports -DllPath C:\Some\Path\here.dll -ExportsToCpp C:\Some\Out\File
 	$ExportArray = @()
 	for ($i=0; $i -lt $EXPORT_DIRECTORY_FLAGS.NumberOfNames; $i++){
 		# Calculate function name RVA
-		$FunctionNameRVA = Convert-RVAToFileOffset $([Runtime.InteropServices.Marshal]::ReadInt32($HModule + $ExportNamesRVA + ($i*4))) $SectionArray
+		$FunctionNameRVA = Convert-RVAToFileOffset $([Runtime.InteropServices.Marshal]::ReadInt32($HModule.ToInt64() + $ExportNamesRVA + ($i*4))) $SectionArray
 		$HashTable = @{
-			FunctionName = [System.Runtime.InteropServices.Marshal]::PtrToStringAnsi($HModule + $FunctionNameRVA)
-			ImageRVA = echo "0x$("{0:X8}" -f $([Runtime.InteropServices.Marshal]::ReadInt32($HModule + $ExportFunctionsRVA + ($i*4))))"
-			Ordinal = [Runtime.InteropServices.Marshal]::ReadInt16($HModule + $ExportOrdinalsRVA + ($i*2)) + $EXPORT_DIRECTORY_FLAGS.Base
+			FunctionName = [System.Runtime.InteropServices.Marshal]::PtrToStringAnsi($HModule.ToInt64() + $FunctionNameRVA)
+			ImageRVA = echo "0x$("{0:X8}" -f $([Runtime.InteropServices.Marshal]::ReadInt32($HModule.ToInt64() + $ExportFunctionsRVA + ($i*4))))"
+			Ordinal = [Runtime.InteropServices.Marshal]::ReadInt16($HModule.ToInt64() + $ExportOrdinalsRVA + ($i*2)) + $EXPORT_DIRECTORY_FLAGS.Base
 		}
 		$Object = New-Object PSObject -Property $HashTable
 		$ExportArray += $Object
