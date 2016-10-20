@@ -166,7 +166,6 @@ C:\PS> Get-Exports -DllPath C:\Some\Path\here.dll -ExportsToCpp C:\Some\Out\File
 		$HashTable = @{
 			FunctionName = [System.Runtime.InteropServices.Marshal]::PtrToStringAnsi($HModule + $FunctionNameRVA)
 			ImageRVA = echo "0x$("{0:X8}" -f $([Runtime.InteropServices.Marshal]::ReadInt32($HModule + $ExportFunctionsRVA + ($i*4))))"
-			# +1 because the ordinal array actually starts at 0.. sigh..
 			Ordinal = [Runtime.InteropServices.Marshal]::ReadInt16($HModule + $ExportOrdinalsRVA + ($i*2)) + $EXPORT_DIRECTORY_FLAGS.Base
 		}
 		$Object = New-Object PSObject -Property $HashTable
