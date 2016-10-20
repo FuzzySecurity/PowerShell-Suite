@@ -115,6 +115,43 @@ LUID Privilege
   34 SeTimeZonePrivilege
 ```
 
+### Get-Exports
+
+Get-Exports, fetches DLL exports and optionally provides C++ wrapper output (idential to ExportsToC++ but without needing VS and a compiled binary). To do this it reads DLL bytes into memory and then parses them (no LoadLibraryEx). Because of this you can parse x32/x64 DLL's regardless of the bitness of PowerShell.
+
+```
+PS C:\> Get-Exports -DllPath C:\Windows\System32\ubpm.dll
+
+[?] 32-bit Image!
+
+[>] Time Stamp: 07/15/2016 18:07:55
+[>] Function Count: 16
+[>] Named Functions: 16
+[>] Ordinal Base: 1
+[>] Function Array RVA: 0x2F578
+[>] Name Array RVA: 0x2F5B8
+[>] Ordinal Array RVA: 0x2F5F8
+
+Ordinal ImageRVA   FunctionName
+------- --------   ------------
+      1 0x000242A0 UbpmAcquireJobBackgroundMode
+      2 0x00004750 UbpmApiBufferFree
+      3 0x00004E30 UbpmCloseTriggerConsumer
+      4 0x000135E0 UbpmInitialize
+      5 0x00008D00 UbpmOpenTriggerConsumer
+      6 0x000242C0 UbpmReleaseJobBackgroundMode
+      7 0x00013230 UbpmSessionStateChanged
+      8 0x000242E0 UbpmTerminate
+      9 0x00003BD0 UbpmTriggerConsumerConfigure
+     10 0x000040C0 UbpmTriggerConsumerControl
+     11 0x00025B10 UbpmTriggerConsumerControlNotifications
+     12 0x00025B40 UbpmTriggerConsumerQueryStatus
+     13 0x0000E1B0 UbpmTriggerConsumerRegister
+     14 0x000043F0 UbpmTriggerConsumerSetDisabledForUser
+     15 0x00012480 UbpmTriggerConsumerSetStatePublishingSecurity
+     16 0x00005330 UbpmTriggerConsumerUnregister
+```
+
 ## pwnd
 
 ### Bypass-UAC
