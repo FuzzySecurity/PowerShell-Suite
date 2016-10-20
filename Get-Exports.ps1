@@ -177,7 +177,7 @@ C:\PS> Get-Exports -DllPath C:\Some\Path\here.dll -ExportsToCpp C:\Some\Out\File
 	# Optionally write ExportToC++ wrapper output
 	if ($ExportsToCpp) {
 		foreach ($Entry in $ExportArray) {
-			echo "#pragma comment (linker, '/export:$($Entry.FunctionName)=[FORWARD_DLL_HERE].$($Entry.FunctionName),@$($Entry.Ordinal)')" >> $ExportToCpp
+			Add-Content $ExportsToCpp "#pragma comment (linker, '/export:$($Entry.FunctionName)=[FORWARD_DLL_HERE].$($Entry.FunctionName),@$($Entry.Ordinal)')"
 		}
 	}
 
