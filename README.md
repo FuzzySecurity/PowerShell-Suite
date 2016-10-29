@@ -365,6 +365,45 @@ C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
 
 ## Utility
 
+### Invoke-Capstone
+
+Powershell wrapper for Capstone v3 (using inline C#). The only Capstone feature
+which has not been implemented is the extended architecture-dependent information.
+	
+In effect the function directly parses the Capstone dll so it can support any
+features implemented by Capstone so long as function calls are prototyped in C#.
+
+```
+# ARM simple disassembly
+C:\PS> $Bytes = [Byte[]] @( 0x10, 0xf1, 0x10, 0xe7, 0x11, 0xf2, 0x31, 0xe7, 0xdc, 0xa1, 0x2e, 0xf3, 0xe8, 0x4e, 0x62, 0xf3 )
+C:\PS> Invoke-Capstone -Architecture ARM -Mode ARM -Bytes $Bytes
+	
+sdiv r0, r0, r1
+udiv r1, r1, r2
+vbit q5, q15, q6
+vcgt.f32 q10, q9, q12
+
+# X86 detailed disassembly, ATT syntax
+C:\PS> $Bytes = [Byte[]] @( 0xB8, 0x0A, 0x00, 0x00, 0x00, 0xF7, 0xF3 )
+C:\PS> Invoke-Capstone -Architecture X86 -Mode 32 -Bytes $Bytes -Syntax ATT -Detailed
+
+Size     : 5
+Address  : 0x100000
+Mnemonic : movl
+Operands : $0xa, %eax
+Bytes    : {184, 10, 0, 0...}
+RegRead  :
+RegWrite :
+
+Size     : 2
+Address  : 0x100005
+Mnemonic : divl
+Operands : %ebx
+Bytes    : {247, 243, 0, 0...}
+RegRead  : {eax, edx}
+RegWrite : {eax, edx, eflags}
+```
+
 ### Calculate-Hash
 
 PowerShell v2 compatible script to calculate file hashes. I quickly scripted this together because Get-FileHash is only available in v4+.
