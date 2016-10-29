@@ -167,7 +167,7 @@ function Invoke-Capstone {
 			$count = 0
 			do
 				{
-					$count = $DeflateStream.Read($buffer, 0, 2)
+					$count = $DeflateStream.Read($buffer, 0, 1024)
 					if ($count -gt 0)
 						{
 							$Stream.Write($buffer, 0, $count)
@@ -187,7 +187,7 @@ function Invoke-Capstone {
 			$count = 0
 			do
 				{
-					$count = $DeflateStream.Read($buffer, 0, 2)
+					$count = $DeflateStream.Read($buffer, 0, 1024)
 					if ($count -gt 0)
 						{
 							$Stream.Write($buffer, 0, $count)
