@@ -73,7 +73,7 @@ function Invoke-Capstone {
 #>
 
 	param(
-        [Parameter(Mandatory = $True)]
+        [Parameter(ParameterSetName='Capstone', Mandatory = $True)]
         [ValidateSet(
 			'ARM',
 			'ARM64',
@@ -88,7 +88,7 @@ function Invoke-Capstone {
 		]
         [String]$Architecture,
 		
-        [Parameter(Mandatory = $True)]
+        [Parameter(ParameterSetName='Capstone', Mandatory = $True)]
         [ValidateSet(
 			'Little_Endian',
 			'ARM',
@@ -109,19 +109,50 @@ function Invoke-Capstone {
 		]
         [String]$Mode,
 		
-		[Parameter(Mandatory = $True)]
+		[Parameter(ParameterSetName='Capstone', Mandatory = $True)]
 		[ValidateNotNullOrEmpty()]
 		[Byte[]]$Bytes,
 
-		[Parameter(Mandatory = $False)]
+		[Parameter(ParameterSetName='Capstone', Mandatory = $False)]
 		[String]$Syntax = "Intel",
 
-		[Parameter(Mandatory = $False)]
+		[Parameter(ParameterSetName='Capstone', Mandatory = $False)]
 		[Int]$Address = 0x100000,
 
-		[Parameter(Mandatory = $False)]
-		[switch]$Detailed = $null
+		[Parameter(ParameterSetName='Capstone', Mandatory = $False)]
+		[switch]$Detailed = $null,
+
+		[Parameter(ParameterSetName='Version', Mandatory = $False)]
+		[switch]$Version = $null
     )
+
+	if ($Version){
+		$Banner = @"
+
+                 (((;                
+              (; "((((\              
+           ;((((((; "((((;           
+          ((((""\(((( "((((          
+        ((((" ((\ "(((( "(((\        
+      ;(((/ ((((((( "(((( \(((       
+     ((((" (((* "(((( \(((;"(((\     
+    ((((";((("/(( \(((;"(((\"(((\    
+   (((( (((( ((((" "(((\ ((() (((\   
+  ;((("(((( (((*     **"" ((()"(((;  
+  (((" ((( (((( ((((((((((((((:*(((  
+ (((( (((*)((( ********"""" ;;(((((; 
+ (((* ((( (((((((((((((((((((((*"" ( 
+ ((("(((( """***********"""" ;;((((( 
+  "" (((((((((((((((((((((((((((*""  
+         """****(((((****"""         
+                                     
+     -=[Capstone Engine v3.0.4]=-
+
+"@
+		# Mmm ASCII version banner!
+		$Banner
+		Return
+	}
 
     function Emit-Capstone {
 	<#
