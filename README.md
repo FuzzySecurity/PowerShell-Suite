@@ -365,6 +365,57 @@ C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
 
 ## Utility
 
+### Invoke-Keystone
+
+Powershell wrapper for Keystone (using inline C#).
+
+In effect the function directly parses the Keystone dll so it can support any
+features implemented by Keystone so long as function calls are prototyped in C#.
+
+```
+# Keystone DLL not in %tmp%
+PS C:\> Invoke-Keystone -Architecture X86 -Mode 32 -Code "nop;nop;div ebx"
+
+[!] Keystone DLL not found in %tmp%, creating it..
+[+] 32-bit Keystone DLL: C:\Users\b33f\AppData\Local\Temp\keystone.dll
+
+Bytes        : 4
+Instructions : 3
+PSArray      : {0x90, 0x90, 0xF7, 0xF3}
+CArray       : {\x90, \x90, \xF7, \xF3}
+RawArray     : {90, 90, F7, F3}
+
+# Support for multi-line code blocks
+PS C:\> $Code = @"
+>> sub esp, 200
+>> pop eax
+>> pop ecx
+>> ret
+>> "@
+PS C:\> Invoke-Keystone -Architecture X86 -Mode 32 -Code $Code
+
+Bytes        : 9
+Instructions : 4
+PSArray      : {0x81, 0xEC, 0xC8, 0x00...}
+CArray       : {\x81, \xEC, \xC8, \x00...}
+RawArray     : {81, EC, C8, 00...}
+
+# Invoke-Keystone emits objects
+PS C:\> $Code = @"
+>> sub esp, 200
+>> pop eax
+>> pop ecx
+>> ret
+>> "@
+PS C:\> $Object = Invoke-Keystone -Architecture X86 -Mode 32 -Code $Code
+PS C:\> $Object.RawArray -join ""
+81ECC80000005859C3
+PS C:\> $Object.CArray -join ""
+\x81\xEC\xC8\x00\x00\x00\x58\x59\xC3
+PS C:\> "`$Shellcode = {" + $($Object.PSArray -join ", ") + "}"
+$Shellcode = {0x81, 0xEC, 0xC8, 0x00, 0x00, 0x00, 0x58, 0x59, 0xC3}
+```
+
 ### Invoke-Capstone
 
 Powershell wrapper for Capstone v3 (using inline C#). The only Capstone feature
