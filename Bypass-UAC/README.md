@@ -16,9 +16,9 @@ Bypass-UAC is self-contained and does not have any dependencies, bar a requireme
 * UacMethodMMC2: Hybrid method (mmc -> rsop.msc -> wbemcomn.dll)
   * Targets: x64 Win7+ (currently unpatched)
 * UacMethodTcmsetup: Hybrid method (tcmsetup -> tcmsetup.exe.local -> comctl32.dll)
-  * Targets: x32/x64 Win7+ (currently unpatched)
+  * Targets: x32/x64 Win7+ (UAC "0day" ¯\_(ツ)_/¯)
 * UacMethodNetOle32: Hybrid method (mmc some.msc -> Microsoft.NET\Framework[64]\..\ole32.dll)
-  * Targets: x32/x64 Win7+ (currently unpatched)
+  * Targets: x32/x64 Win7+ (UAC "0day" ¯\_(ツ)_/¯)
 
 #### Sample Output
 
@@ -70,7 +70,7 @@ Bootstrap function which writes an x32/x64 bit proxy dll to disk (Yamabiko). Thi
 
 # Contributing
 
-Currently there are four methods in Bypass-UAC, I will add more gradually but it would be awesome if people want to contribute. It is really easy to add a new method, provided you need an elevated file copy/move/rename or folder creation. A sample method can be seen below for reference.
+Currently there are five methods in Bypass-UAC, I will add more gradually but it would be awesome if people want to contribute. It is really easy to add a new method, provided you need an elevated file copy/move/rename or folder creation. A sample method can be seen below for reference.
 
 ```powershell
 'UacMethodSysprep'
@@ -124,6 +124,8 @@ This project is for authorized use only, that goes without saying, I don't take 
 
 # References
 
+* Anatomy of UAC Attacks
+  * http://www.fuzzysecurity.com/tutorials/27.html
 * UACME
   * https://github.com/hfiref0x/UACME
 * Windows 7 UAC whitelist
