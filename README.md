@@ -365,6 +365,59 @@ C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
 
 ## Utility
 
+### Trace-Execution
+
+Uses the Capstone engine to recursively disassemble a PE (x32/x64) from it's entry point, effectively "following" execution flow. The following rules are observed:
+
+- jmp's are taken if they fall in the PE address space
+- call's are taken if they fall in the PE address space
+- ret's are taken and use the return address stored by call instructions
+- indirect call/jmp's are not taken
+- conditional jmp's are not taken
+- call/jmp's which reference a register are not taken
+
+There are many many edge cases here which can make disassembly unreliable. As a general rule, the more addresses you disassemble, the less trustworthy the output is. The call table can be used as a reference to gauge the veracity of the output.
+
+Since disassembly is static, working of a byte array, x32/x64 PE's can be disassembled regardless of the bitness of PowerShell.
+
+```
+PS C:\> Trace-Execution -Path .\Desktop\some.exe -InstructionCount 10
+
+[>] 32-bit Image!
+
+[?] Call table:
+
+Address    Mnemonic Taken Reason
+-------    -------- ----- ------
+0x4AD0829A call     Yes   Relative offset call
+0x4AD07CB7 call     No    Indirect call
+
+[?] Instruction trace:
+
+Size Address    Mnemonic Operands                    Bytes                   RegRead  RegWrite
+---- -------    -------- --------                    -----                   -------  --------
+   5 0x4AD0829A call     0x4ad07c89                  {232, 234, 249, 255...} {esp}
+   2 0x4AD07C89 mov      edi, edi                    {139, 255, 249, 255...}
+   1 0x4AD07C8B push     ebp                         {85, 255, 249, 255...}  {esp}    {esp}
+   2 0x4AD07C8C mov      ebp, esp                    {139, 236, 249, 255...}
+   3 0x4AD07C8E sub      esp, 0x10                   {131, 236, 16, 255...}           {eflags}
+   5 0x4AD07C91 mov      eax, dword ptr [0x4ad240ac] {161, 172, 64, 210...}
+   4 0x4AD07C96 and      dword ptr [ebp - 8], 0      {131, 101, 248, 0...}            {eflags}
+   4 0x4AD07C9A and      dword ptr [ebp - 4], 0      {131, 101, 252, 0...}            {eflags}
+   1 0x4AD07C9E push     ebx                         {83, 101, 252, 0...}    {esp}    {esp}
+   1 0x4AD07C9F push     edi                         {87, 101, 252, 0...}    {esp}    {esp}
+   5 0x4AD07CA0 mov      edi, 0xbb40e64e             {191, 78, 230, 64...}
+   5 0x4AD07CA5 mov      ebx, 0xffff0000             {187, 0, 0, 255...}
+   2 0x4AD07CAA cmp      eax, edi                    {59, 199, 0, 255...}             {eflags}
+   6 0x4AD07CAC jne      0x4ad1bc8c                  {15, 133, 218, 63...}   {eflags}
+   1 0x4AD07CB2 push     esi                         {86, 133, 218, 63...}   {esp}    {esp}
+   3 0x4AD07CB3 lea      eax, dword ptr [ebp - 8]    {141, 69, 248, 63...}
+   1 0x4AD07CB6 push     eax                         {80, 69, 248, 63...}    {esp}    {esp}
+   6 0x4AD07CB7 call     dword ptr [0x4ad01150]      {255, 21, 80, 17...}    {esp}
+   3 0x4AD07CBD mov      esi, dword ptr [ebp - 4]    {139, 117, 252, 0...}
+   3 0x4AD07CC0 xor      esi, dword ptr [ebp - 8]    {51, 117, 248, 0...}             {eflags}
+```
+
 ### Calculate-Hash
 
 PowerShell v2 compatible script to calculate file hashes. I quickly scripted this together because Get-FileHash is only available in v4+.
