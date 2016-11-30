@@ -152,6 +152,33 @@ Ordinal ImageRVA   FunctionName
      16 0x00005330 UbpmTriggerConsumerUnregister
 ```
 
+### Get-SystemModuleInformation
+
+Use NtQuerySystemInformation::SystemModuleInformation to get a list of loaded modules, their base address and size (x32/x64).
+
+```
+PS C:\> Get-SystemModuleInformation
+
+[+] Calling NtQuerySystemInformation::SystemModuleInformation
+[?] Success, allocated 55656 byte result buffer
+[?] Result buffer contains 188 SystemModuleInformation objects
+
+ImageBase          ImageSize ImageName
+---------          --------- ---------
+0xFFFFF80314C0D000 0x749000  \SystemRoot\system32\ntoskrnl.exe
+0xFFFFF80315356000 0x6C000   \SystemRoot\system32\hal.dll
+0xFFFFF803149ED000 0x9000    \SystemRoot\system32\kd.dll
+0xFFFFF88000CB5000 0x5C000   \SystemRoot\System32\drivers\CLFS.SYS
+0xFFFFF88000D11000 0x23000   \SystemRoot\System32\drivers\tm.sys
+0xFFFFF88000D34000 0x15000   \SystemRoot\system32\PSHED.dll
+0xFFFFF88000D49000 0xA000    \SystemRoot\system32\BOOTVID.dll
+0xFFFFF88000D53000 0x7F000   \SystemRoot\system32\CI.dll
+0xFFFFF88001068000 0x63000   \SystemRoot\System32\drivers\msrpc.sys
+0xFFFFF880010CB000 0xC2000   \SystemRoot\system32\drivers\Wdf01000.sys
+0xFFFFF8800118D000 0x10000   \SystemRoot\system32\drivers\WDFLDR.SYS
+...Snip...
+```
+
 ## pwnd
 
 ### Bypass-UAC
