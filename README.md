@@ -179,6 +179,66 @@ ImageBase          ImageSize ImageName
 ...Snip...
 ```
 
+### Expose-NetAPI
+
+A crude tool to expose .NET API classes to PowerShell through reflection. This includes internal private classes, such as Microsoft.Win32.UnsafeNativeMethods.
+
+```
+# Not all namespaces are available by default in
+# PowerShell, MSDN/Google is your friend!
+C:\PS> Expose-NetAPI -Search bitmap
+
+[!] Search returned no results, try specifying the namespace!
+
+C:\PS> Expose-NetAPI -Search bitmap -Namespace System.Drawing
+
+Assembly            TypeName                          Name                        Definition
+--------            --------                          ----                        ----------
+System.Drawing.dll  System.Windows.Forms.DpiHelper    CreateResizedBitmap         static System.Drawing.Bitmap Crea...
+System.Drawing.dll  System.Windows.Forms.DpiHelper    ScaleBitmapLogicalToDevice  static void ScaleBitmapLogicalToD...
+System.Drawing.dll  System.Drawing.Bitmap             FromHbitmap                 static System.Drawing.Bitmap From...
+System.Drawing.dll  System.Drawing.BitmapSelector     CreateBitmap                static System.Drawing.Bitmap Crea...
+System.Drawing.dll  System.Drawing.Image              FromHbitmap                 static System.Drawing.Bitmap From...
+System.Drawing.dll  System.Drawing.SafeNativeMethods  CreateBitmap                static System.IntPtr CreateBitmap...
+System.Drawing.dll  System.Drawing.SafeNativeMethods  CreateCompatibleBitmap      static System.IntPtr CreateCompat...
+System.Drawing.dll  System.Drawing.SafeNativeMethods  IntCreateBitmap             static System.IntPtr IntCreateBit...
+System.Drawing.dll  System.Drawing.SafeNativeMethods  IntCreateCompatibleBitmap   static System.IntPtr IntCreateCom...
+System.Drawing.dll  System.Drawing.Imaging.Metafile   FromHbitmap                 static System.Drawing.Bitmap From...
+
+# Often multiple options available with differing
+# definitions. Take care when selecting the desired
+# API.
+C:\PS> Expose-NetAPI -Search drawbutton |Select Assembly,TypeName,Name |ft
+
+Assembly                  TypeName                                           Name
+--------                  --------                                           ----
+System.Windows.Forms.dll  System.Windows.Forms.ButtonRenderer                DrawButton
+System.Windows.Forms.dll  System.Windows.Forms.ControlPaint                  DrawButton
+System.Windows.Forms.dll  System.Windows.Forms.DataGridViewButtonCell+Da...  DrawButton
+
+# Take care when directly calling enable, a number
+# of assemblies are not loaded by default!
+C:\PS> Expose-NetAPI -Enable -Assembly System.Windows.Forms.dll -TypeName System.Windows.Forms.SafeNativeMethods
+
+[!] Unable to locate specified assembly!
+
+C:\PS> Expose-NetAPI -Load System.Windows.Forms
+True
+
+C:\PS> Expose-NetAPI -Enable -Assembly System.Windows.Forms.dll -TypeName System.Windows.Forms.SafeNativeMethods
+
+[+] Created $SystemWindowsFormsSafeNativeMethods!
+
+# Once enabled the TypeName is exposed as a global
+# variable and can be used to call any API's it includes!
+C:\PS> Expose-NetAPI -Enable -Assembly System.dll -TypeName Microsoft.Win32.UnsafeNativeMethods |Out-Null
+C:\PS> Expose-NetAPI -Enable -Assembly System.dll -TypeName Microsoft.Win32.SafeNativeMethods |Out-Null
+C:\PS> $ModHandle = $MicrosoftWin32UnsafeNativeMethods::GetModuleHandle("kernel32.dll")
+C:\PS> $Kernel32Ref = New-Object System.Runtime.InteropServices.HandleRef([IntPtr]::Zero,$ModHandle)
+C:\PS> $Beep = $MicrosoftWin32UnsafeNativeMethods::GetProcAddress($Kernel32Ref, "Beep")
+C:\PS> $MicrosoftWin32SafeNativeMethods::MessageBox([IntPtr]::Zero,$("{0:X}" -f [int64]$Beep),"Beep",0)
+```
+
 ## pwnd
 
 ### Bypass-UAC
