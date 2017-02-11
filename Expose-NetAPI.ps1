@@ -26,6 +26,10 @@ function Expose-NetAPI {
 
 	Case insensitive string search for API names.
 
+.PARAMETER Load
+
+	Load specified assembly in the PowerShell session.
+
 .PARAMETER Namespace
 
 	.Net namespace, e.g. "System.Drawing".
