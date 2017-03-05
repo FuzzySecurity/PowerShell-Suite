@@ -6,7 +6,7 @@ function Get-CRC32 {
 .DESCRIPTION
 	Author: Ruben Boonen (@FuzzySec)
 	License: BSD 3-Clause
-	Required Dependencies: Get-CapstoneDisassembly
+	Required Dependencies: None
 	Optional Dependencies: None
 
 .PARAMETER InitialCRC
