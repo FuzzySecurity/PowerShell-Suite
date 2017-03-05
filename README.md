@@ -452,6 +452,17 @@ C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
 
 ## Utility
 
+### Get-CRC32
+
+A simple wrapper for the undocumented RtlComputeCrc32 function.
+
+```
+# Example from string
+C:\PS> $String = [System.Text.Encoding]::ASCII.GetBytes("Testing!")
+C:\PS> Get-CRC32 -Buffer $String
+C:\PS> 2392247274
+```
+
 ### Trace-Execution
 
 Uses the Capstone engine to recursively disassemble a PE (x32/x64) from it's entry point, effectively "following" execution flow. The following rules are observed:
