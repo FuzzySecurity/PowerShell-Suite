@@ -452,6 +452,68 @@ C:\PS> Subvert-PE -Path C:\Path\To\PE.exe -Write
 
 ## Utility
 
+### Get-LimitChildItem
+
+Depth limited wrapper for Get-ChildItem with basic filter functionality.
+
+```
+# UNC path txt file search
+PS C:\> Get-LimitChildItem -Path "\\192.168.84.129\C$\Program Files\" -MaxDepth 5 -Filter "*.txt"
+\\192.168.84.129\C$\Program Files\Windows Defender\ThirdPartyNotices.txt
+\\192.168.84.129\C$\Program Files\VMware\VMware Tools\open_source_licenses.txt
+\\192.168.84.129\C$\Program Files\VMware\VMware Tools\vmacthlp.txt
+\\192.168.84.129\C$\Program Files\Windows NT\TableTextService\TableTextServiceAmharic.txt
+\\192.168.84.129\C$\Program Files\Windows NT\TableTextService\TableTextServiceArray.txt
+\\192.168.84.129\C$\Program Files\Windows NT\TableTextService\TableTextServiceDaYi.txt
+\\192.168.84.129\C$\Program Files\Windows NT\TableTextService\TableTextServiceTigrinya.txt
+\\192.168.84.129\C$\Program Files\Windows NT\TableTextService\TableTextServiceYi.txt
+
+# Local wildcard *ini* search
+PS C:\> Get-LimitChildItem -Path C:\ -MaxDepth 3 -Filter "*ini*"
+C:\Windows\system.ini
+C:\Windows\win.ini
+C:\Windows\Boot\BootDebuggerFiles.ini
+C:\Windows\Fonts\desktop.ini
+C:\Windows\INF\mdmminij.inf
+C:\Windows\Media\Windows Minimize.wav
+C:\Windows\PolicyDefinitions\PenTraining.admx
+C:\Windows\PolicyDefinitions\WinInit.admx
+C:\Windows\System32\dwminit.dll
+C:\Windows\System32\ie4uinit.exe
+C:\Windows\System32\ieuinit.inf
+C:\Windows\System32\PerfStringBackup.INI
+C:\Windows\System32\rdpinit.exe
+C:\Windows\System32\regini.exe
+C:\Windows\System32\secinit.exe
+C:\Windows\System32\tcpmon.ini
+C:\Windows\System32\TpmInit.exe
+C:\Windows\System32\userinit.exe
+C:\Windows\System32\userinitext.dll
+C:\Windows\System32\UXInit.dll
+C:\Windows\System32\WimBootCompress.ini
+C:\Windows\System32\wininet.dll
+C:\Windows\System32\wininetlui.dll
+C:\Windows\System32\wininit.exe
+C:\Windows\System32\wininitext.dll
+C:\Windows\System32\winipcfile.dll
+C:\Windows\System32\winipcsecproc.dll
+C:\Windows\System32\winipsec.dll
+C:\Windows\SysWOW64\ieuinit.inf
+C:\Windows\SysWOW64\regini.exe
+C:\Windows\SysWOW64\secinit.exe
+C:\Windows\SysWOW64\TpmInit.exe
+C:\Windows\SysWOW64\userinit.exe
+C:\Windows\SysWOW64\userinitext.dll
+C:\Windows\SysWOW64\UXInit.dll
+C:\Windows\SysWOW64\WimBootCompress.ini
+C:\Windows\SysWOW64\wininet.dll
+C:\Windows\SysWOW64\wininetlui.dll
+C:\Windows\SysWOW64\wininitext.dll
+C:\Windows\SysWOW64\winipcfile.dll
+C:\Windows\SysWOW64\winipcsecproc.dll
+C:\Windows\SysWOW64\winipsec.dll
+```
+
 ### Get-CRC32
 
 A simple wrapper for the undocumented RtlComputeCrc32 function.
