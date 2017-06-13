@@ -81,16 +81,21 @@ function Get-Handles {
 	$OSMajorMinor = "$($OSVersion.Major).$($OSVersion.Minor)"
 	switch ($OSMajorMinor)
 	{
-		'10.0' # Windows 10 - Incomplete still, but 99% of the what you will see in any given process (work in progress, need to pull up KD)
+		'10.0' # Windows 10 (Tested on v1511)
 		{
 			$TypeSwitches = @{
-				0x03 = 'Directory'; 0x04 = 'SymbolicLink'; 0x05 = 'Token'; 0x07 = 'Process'; 0x08 = 'Thread';
-				0x0D = 'Event'; 0x0E = 'Mutant'; 0x10 = 'Semaphore'; 0x11 = 'Timer'; 0x12 = 'IRTimer';
-				0x15 = 'WindowStation'; 0x16 = 'Desktop'; 0x17 = 'Composition'; 0x18 = 'RawInputManager';
-				0x19 = 'TpWorkerFactory'; 0x1E = 'IoCompletion'; 0x1F = 'WaitCompletionPacket'; 0x20 = 'File';
-				0x21 = 'TmTm'; 0x22 = 'TmTx'; 0x23 = 'TmRm'; 0x24 = 'TmEn'; 0x25 = 'Section'; 0x26 = 'Session';
-				0x27 = 'Partition'; 0x28 = 'Key'; 0x29 = 'ALPC Port'; 0x2C = 'EtwRegistration'; 0x2F = 'DmaDomain';
-				0x31 = 'FilterConnectionPort';
+				0x02 = 'Type'; 0x03 = 'Directory'; 0x04 = 'SymbolicLink'; 0x05 = 'Token'; 0x06 = 'Job';
+				0x07 = 'Process'; 0x08 = 'Thread'; 0x09 = 'UserApcReserve'; 0x0A = 'IoCompletionReserve';
+				0x0B = 'DebugObject'; 0x0C = 'Event'; 0x0D = 'Mutant'; 0x0E = 'Callback'; 0x0F = 'Semaphore';
+				0x10 = 'Timer'; 0x11 = 'IRTimer'; 0x12 = 'Profile'; 0x13 = 'KeyedEvent'; 0x14 = 'WindowStation';
+				0x15 = 'Desktop'; 0x16 = 'Composition'; 0x17 = 'RawInputManager'; 0x18 = 'TpWorkerFactory';
+				0x19 = 'Adapter'; 0x1A = 'Controller'; 0x1B = 'Device'; 0x1C = 'Driver'; 0x1D = 'IoCompletion';
+				0x1E = 'WaitCompletionPacket'; 0x1F = 'File'; 0x20 = 'TmTm'; 0x21 = 'TmTx'; 0x22 = 'TmRm';
+				0x23 = 'TmEn'; 0x24 = 'Section'; 0x25 = 'Session'; 0x26 = 'Partition'; 0x27 = 'Key';
+				0x28 = 'ALPC Port'; 0x29 = 'PowerRequest'; 0x2A = 'WmiGuid'; 0x2B = 'EtwRegistration';
+				0x2C = 'EtwConsumer'; 0x2D = 'DmaAdapter'; 0x2E = 'DmaDomain'; 0x2F = 'PcwObject';
+				0x30 = 'FilterConnectionPort'; 0x31 = 'FilterCommunicationPort'; 0x32 = 'NetworkNamespace';
+				0x33 = 'DxgkSharedResource'; 0x34 = 'DxgkSharedSyncObject'; 0x35 = 'DxgkSharedSwapChainObject';
 			}
 		}
 		
