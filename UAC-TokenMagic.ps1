@@ -244,7 +244,7 @@ function UAC-TokenMagic {
 	}
 
 	if ($ProcPID){
-		$IsValidProc = ((Get-Process).Id).Contains($ProcPID)
+		$IsValidProc = Get-Process -Id $ProcPID -ErrorAction SilentlyContinue
 		if (!$IsValidProc) {
 			echo "[!] Invalid process specified!`n"
 			Break
