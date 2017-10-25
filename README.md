@@ -280,6 +280,52 @@ C:\PS> $CallResult
 False
 ```
 
+### Get-SystemProcessInformation
+
+Use NtQuerySystemInformation::SystemProcessInformation to get a detailed list of processes and process properties. On close inspection you will find that many process monitors such as Sysinternals Process Explorer or Process Hacker use this information class (in addition to SystemPerformanceInformation, SystemProcessorPerformanceInformation and SystemProcessorCycleTimeInformation).
+
+```
+# Return full process listing
+C:\PS> Get-SystemProcessInformation
+
+# Return only specific PID
+C:\PS> Get-SystemProcessInformation -ProcID 1336
+
+PID                        : 1336
+InheritedFromPID           : 1020
+ImageName                  : svchost.exe
+Priority                   : 8
+CreateTime                 : 0d:9h:8m:47s
+UserCPU                    : 0d:0h:0m:0s
+KernelCPU                  : 0d:0h:0m:0s
+ThreadCount                : 12
+HandleCount                : 387
+PageFaults                 : 7655
+SessionId                  : 0
+PageDirectoryBase          : 3821568
+PeakVirtualSize            : 2097249.796875 MB
+VirtualSize                : 2097240.796875 MB
+PeakWorkingSetSize         : 11.65625 MB
+WorkingSetSize             : 6.2109375 MB
+QuotaPeakPagedPoolUsage    : 0.175910949707031 MB
+QuotaPagedPoolUsage        : 0.167121887207031 MB
+QuotaPeakNonPagedPoolUsage : 0.0151519775390625 MB
+QuotaNonPagedPoolUsage     : 0.0137710571289063 MB
+PagefileUsage              : 3.64453125 MB
+PeakPagefileUsage          : 4.14453125 MB
+PrivatePageCount           : 3.64453125 MB
+ReadOperationCount         : 0
+WriteOperationCount        : 0
+OtherOperationCount        : 223
+ReadTransferCount          : 0
+WriteTransferCount         : 0
+OtherTransferCount         : 25010
+
+# Possibly returns multiple processes
+# eg: notepad.exe & notepad++.exe
+C:\PS> Get-SystemProcessInformation -ProcName note
+```
+
 ## pwnd
 
 ### Stage-RemoteDll
