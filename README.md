@@ -341,7 +341,7 @@ VERBOSE: [+] Created transacted file
 VERBOSE: [+] Overwriting transacted file
 VERBOSE: [+] Created section from transacted file
 VERBOSE: [+] Rolled back transaction changes
-VERBOSE: [+] Opened handle the parent => explorer
+VERBOSE: [+] Opened handle to the parent => explorer
 VERBOSE: [+] Created process from section
 VERBOSE: [+] Acquired Eidolon PBI
 VERBOSE: [+] Eidolon architecture is 64-bit
