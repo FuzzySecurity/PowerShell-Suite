@@ -8,7 +8,7 @@ function Get-OSTokenInformation {
 	  between the time the script identifies them and later tries to poll the data.
 	- Calling Get-AuthenticodeSignature on all binary paths is intensive so I commented out lines 611
 	  and 618 to speed up the scanner. Re-enable as required.
-	- The function impersonates SYSTEM using SetThreadToken but this requires the PowerShell GetApartmentState
+	- The function impersonates SYSTEM using SetThreadToken but this requires the PowerShell apartment state
 	  to be STA. This is only an issue on Win7 & 2k8.
 	- If the function returns $false please use "-Verbose" for more information.
 
@@ -194,8 +194,8 @@ function Get-OSTokenInformation {
 		public UNICODE_STRING DnsDomainName;
 		public UNICODE_STRING Upn;
 		public IntPtr UserFlags; /// This is a hack because on x64
-								 /// there is 4-byte padding here..
-								 /// The UserFlags type is UInt32.
+                                         /// there is 4-byte padding here..
+                                         /// The UserFlags type is UInt32.
 		public LSA_LAST_INTER_LOGON_INFO LastLogonInfo;
 		public UNICODE_STRING LogonScript;
 		public UNICODE_STRING ProfilePath;
