@@ -326,6 +326,70 @@ OtherTransferCount         : 25010
 C:\PS> Get-SystemProcessInformation -ProcName note
 ```
 
+
+### Get-OSTokenInformation
+
+Get-OSTokenInformation uses a variety of API's to pull in all (accessible) user tokens and queries them for details.
+
+```
+# Return full token listing
+C:\PS> $OsTokens = Get-OSTokenInformation
+
+C:\PS> $OsTokens.Count
+136
+
+C:\PS> $OsTokens[10]
+
+PassMustChange      : N/A
+ProcessCompany      : Microsoft Corporation
+AuthPackage         : NTLM
+TokenType           : TokenPrimary
+PID                 : 5876
+LastSuccessfulLogon : N/A
+Session             : 1
+LastFailedLogon     : N/A
+ProcessPath         : C:\Windows\system32\backgroundTaskHost.exe
+LogonServer         : MSEDGEWIN10
+Sid                 : S-1-5-21-4233833229-2203495600-2027003190-1000
+ProcessAuthenticode : Valid
+User                : MSEDGEWIN10\IEUser
+LoginTime           : 4/16/2018 9:52:20 PM
+TokenPrivilegeCount : 5
+TokenPrivileges     : {SeShutdownPrivilege, SeChangeNotifyPrivilege, SeUndockPrivilege,
+                      SeIncreaseWorkingSetPrivilege...}
+Process             : backgroundTaskHost
+PassLastSet         : 10/17/2017 6:13:19 PM
+ImpersonationType   : N/A
+TID                 : Primary
+TokenGroups         : {MSEDGEWIN10\IEUser, MSEDGEWIN10\None, Everyone, NT AUTHORITY\Local account and member of
+                      Administrators group...}
+LogonType           : Interactive
+GroupCount          : 14
+Elevated            : No
+
+# Return brief token listing
+C:\PS> Get-OSTokenInformation -Brief
+
+Process               PID TID     Elevated ImpersonationType     User
+-------               --- ---     -------- -----------------     ----
+ApplicationFrameHost 5820 Primary No       N/A                   MSEDGEWIN10\IEUser
+backgroundTaskHost   1076 Primary No       N/A                   MSEDGEWIN10\IEUser
+backgroundTaskHost   1960 Primary No       N/A                   MSEDGEWIN10\IEUser
+backgroundTaskHost   7860 Primary No       N/A                   MSEDGEWIN10\IEUser
+CompatTelRunner       680 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+CompatTelRunner      6916 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+CompatTelRunner      8488 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+svchost              3572 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+svchost              3900 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+svchost              4292 Primary Yes      N/A                   NT AUTHORITY\SYSTEM
+svchost              4292 144     No       SecurityImpersonation MSEDGEWIN10\IEUser
+svchost              4292 7704    No       SecurityImpersonation MSEDGEWIN10\IEUser
+svchost              4292 1404    No       SecurityImpersonation MSEDGEWIN10\IEUser
+svchost              4464 Primary No       N/A                   MSEDGEWIN10\IEUser
+svchost              4556 Primary No       N/A                   MSEDGEWIN10\IEUser
+[... Snip ...]
+```
+
 ## pwnd
 
 ### Start-Eidolon
