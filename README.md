@@ -390,6 +390,15 @@ svchost              4556 Primary No       N/A                   MSEDGEWIN10\IEU
 [... Snip ...]
 ```
 
+### Native-HardLink
+
+This is a proof-of-concept for NT hard links. There are some advantages, from an offensive perspective, to using NtSetInformationFile to create hard links (as opposed to mklink/CreateHardLink). NtSetInformationFile allows us link to files we don’t have write access to.
+
+```
+PS C:\> Native-HardLink -Link C:\Some\Path\Hard.Link -Target C:\Some\Path\Target.file
+True
+```
+
 ## pwnd
 
 ### Start-Hollow
