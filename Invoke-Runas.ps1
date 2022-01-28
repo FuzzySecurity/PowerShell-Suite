@@ -140,7 +140,7 @@ function Invoke-Runas {
 	echo "`n[>] Calling Advapi32::CreateProcessWithLogonW"
 	$CallResult = [Advapi32]::CreateProcessWithLogonW(
 		$User, $Domain, $Password, $LogonType, $Binary,
-		$Args, 0x04000000, $null, $GetCurrentPath,
+		" " + $Args, 0x04000000, $null, $GetCurrentPath,
 		[ref]$StartupInfo, [ref]$ProcessInfo)
 	
 	if (!$CallResult) {
